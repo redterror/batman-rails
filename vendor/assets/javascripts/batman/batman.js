@@ -3985,6 +3985,11 @@
         this.onAnchorTag = true;
       }
       RouteBinding.__super__.bind.apply(this, arguments);
+
+      if (this.onAnchorTag && this.node.getAttribute('target')) {
+        return;
+      }
+
       return Batman.DOM.events.click(this.node, function(node, event) {
         var params;
         if (event.__batmanActionTaken) {
