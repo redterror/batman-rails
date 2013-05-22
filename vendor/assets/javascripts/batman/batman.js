@@ -306,7 +306,7 @@
       handler = function(e) {
         var handle, _base;
 
-        if (!~e.data.search(prefix)) {
+        if (typeof e.data !== 'string' || !~e.data.search(prefix)) {
           return;
         }
         handle = e.data.substring(prefix.length);
@@ -1116,11 +1116,11 @@
     }
 
     PropertyEvent.prototype.eachHandler = function(iterator) {
-      return this.base.eachObserver(iterator);
+      return this.eachObserver(iterator);
     };
 
     PropertyEvent.prototype.handlerContext = function() {
-      return this.base.base;
+      return this.base;
     };
 
     return PropertyEvent;
@@ -1404,6 +1404,50 @@
         key = this.prefixedKey(key);
         return this._storage.hasOwnProperty(key);
       }
+    };
+
+    SimpleHash.prototype.getObject = function(key) {
+      var pair, pairs, _i, _len;
+
+      if (!this._objectStorage) {
+        return void 0;
+      }
+      if (pairs = this._objectStorage[this.hashKeyFor(key)]) {
+        for (_i = 0, _len = pairs.length; _i < _len; _i++) {
+          pair = pairs[_i];
+          if (this.equality(pair[0], key)) {
+            return pair[1];
+          }
+        }
+      }
+    };
+
+    SimpleHash.prototype.getString = function(key) {
+      return this._storage["_" + key];
+    };
+
+    SimpleHash.prototype.setObject = function(key, val) {
+      var pair, pairs, _base, _i, _len, _name;
+
+      this._objectStorage || (this._objectStorage = {});
+      pairs = (_base = this._objectStorage)[_name = this.hashKeyFor(key)] || (_base[_name] = []);
+      for (_i = 0, _len = pairs.length; _i < _len; _i++) {
+        pair = pairs[_i];
+        if (this.equality(pair[0], key)) {
+          return pair[1] = val;
+        }
+      }
+      this.length++;
+      pairs.push([key, val]);
+      return val;
+    };
+
+    SimpleHash.prototype.setString = function(key, val) {
+      key = "_" + key;
+      if (this._storage[key] == null) {
+        this.length++;
+      }
+      return this._storage[key] = val;
     };
 
     SimpleHash.prototype.get = function(key) {
@@ -1906,14 +1950,15 @@
 
 (function() {
   var SOURCE_TRACKER_STACK, SOURCE_TRACKER_STACK_VALID,
-    __slice = [].slice;
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   SOURCE_TRACKER_STACK = [];
 
   SOURCE_TRACKER_STACK_VALID = true;
 
-  Batman.Property = (function() {
-    Batman.mixin(Property.prototype, Batman.EventEmitter);
+  Batman.Property = (function(_super) {
+    __extends(Property, _super);
 
     Property._sourceTrackerStack = SOURCE_TRACKER_STACK;
 
@@ -1987,7 +2032,7 @@
     Property.registerSource = function(obj) {
       var set;
 
-      if (!obj.isEventEmitter) {
+      if (!(obj.isEventEmitter || obj instanceof Batman.Property)) {
         return;
       }
       if (SOURCE_TRACKER_STACK_VALID) {
@@ -2045,7 +2090,9 @@
 
     Property.prototype.isDead = false;
 
-    Property.prototype.eventClass = Batman.PropertyEvent;
+    Property.prototype.registerAsMutableSource = function() {
+      return Batman.Property.registerSource(this);
+    };
 
     Property.prototype.isEqual = function(other) {
       return this.constructor === other.constructor && this.base === other.base && this.key === other.key;
@@ -2053,19 +2100,6 @@
 
     Property.prototype.hashKey = function() {
       return this._hashKey || (this._hashKey = "<Batman.Property base: " + (Batman.Hash.prototype.hashKeyFor(this.base)) + ", key: \"" + (Batman.Hash.prototype.hashKeyFor(this.key)) + "\">");
-    };
-
-    Property.prototype.event = function(key) {
-      var eventClass, _base;
-
-      eventClass = this.eventClass || Batman.Event;
-      this.events || (this.events = {});
-      (_base = this.events)[key] || (_base[key] = new eventClass(this, key));
-      return this.events[key];
-    };
-
-    Property.prototype.changeEvent = function() {
-      return this._changeEvent || (this._changeEvent = this.event('change'));
     };
 
     Property.prototype.accessor = function() {
@@ -2076,7 +2110,7 @@
       var ancestor, handlers, key, object, property, _i, _j, _len, _len1, _ref, _ref1, _ref2, _results;
 
       key = this.key;
-      handlers = (_ref = this.changeEvent().handlers) != null ? _ref.slice() : void 0;
+      handlers = (_ref = this.handlers) != null ? _ref.slice() : void 0;
       if (handlers) {
         for (_i = 0, _len = handlers.length; _i < _len; _i++) {
           object = handlers[_i];
@@ -2090,7 +2124,7 @@
           ancestor = _ref1[_j];
           if (ancestor.isObservable && ancestor.hasProperty(key)) {
             property = ancestor.property(key);
-            handlers = (_ref2 = property.changeEvent().handlers) != null ? _ref2.slice() : void 0;
+            handlers = (_ref2 = property.handlers) != null ? _ref2.slice() : void 0;
             if (handlers) {
               _results.push((function() {
                 var _k, _len2, _results1;
@@ -2128,7 +2162,7 @@
     };
 
     Property.prototype.updateSourcesFromTracker = function() {
-      var handler, newSources, source, _i, _j, _len, _len1, _ref, _ref1, _results;
+      var handler, newSources, source, _i, _j, _len, _len1, _ref, _ref1;
 
       newSources = this.constructor.popSourceTracker();
       handler = this.sourceChangeHandler();
@@ -2137,20 +2171,29 @@
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           source = _ref[_i];
           if (source != null) {
-            source.off('change', handler);
+            if (source.on) {
+              source.off('change', handler);
+            } else {
+              source.removeHandler(handler);
+            }
           }
         }
       }
       this.sources = newSources;
       if (this.sources) {
         _ref1 = this.sources;
-        _results = [];
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           source = _ref1[_j];
-          _results.push(source != null ? source.on('change', handler) : void 0);
+          if (source != null) {
+            if (source.on) {
+              source.on('change', handler);
+            } else {
+              source.addHandler(handler);
+            }
+          }
         }
-        return _results;
       }
+      return null;
     };
 
     Property.prototype.getValue = function() {
@@ -2186,7 +2229,7 @@
     };
 
     Property.prototype.isFinal = function() {
-      return !!this.accessor()['final'];
+      return this.final || (this.final = !!this.accessor()['final']);
     };
 
     Property.prototype.refresh = function() {
@@ -2196,7 +2239,7 @@
       previousValue = this.value;
       value = this.getValue();
       if (value !== previousValue && !this.isIsolated()) {
-        this.fire(value, previousValue);
+        this.fire(value, previousValue, this.key);
       }
       if (this.value !== void 0 && this.isFinal()) {
         return this.lockValue();
@@ -2270,9 +2313,9 @@
 
     Property.prototype.forget = function(handler) {
       if (handler != null) {
-        return this.changeEvent().removeHandler(handler);
+        return this.removeHandler(handler);
       } else {
-        return this.changeEvent().clearHandlers();
+        return this.clearHandlers();
       }
     };
 
@@ -2282,7 +2325,7 @@
     };
 
     Property.prototype.observe = function(handler) {
-      this.changeEvent().addHandler(handler);
+      this.addHandler(handler);
       if (this.sources == null) {
         this.getValue();
       }
@@ -2290,14 +2333,14 @@
     };
 
     Property.prototype.observeOnce = function(originalHandler) {
-      var event, handler;
+      var handler, self;
 
-      event = this.changeEvent();
+      self = this;
       handler = function() {
         originalHandler.apply(this, arguments);
-        return event.removeHandler(handler);
+        return self.removeHandler(handler);
       };
-      event.addHandler(handler);
+      this.addHandler(handler);
       if (this.sources == null) {
         this.getValue();
       }
@@ -2312,11 +2355,15 @@
         _ref = this.sources;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           source = _ref[_i];
-          source.off('change', handler);
+          if (source.on) {
+            source.off('change', handler);
+          } else {
+            source.removeHandler(handler);
+          }
         }
       }
       delete this.sources;
-      return this.changeEvent().clearHandlers();
+      return this.clearHandlers();
     };
 
     Property.prototype.lockValue = function() {
@@ -2339,12 +2386,6 @@
       return this.isDead = true;
     };
 
-    Property.prototype.fire = function() {
-      var _ref;
-
-      return (_ref = this.changeEvent()).fire.apply(_ref, __slice.call(arguments).concat([this.key]));
-    };
-
     Property.prototype.isolate = function() {
       if (this._isolationCount === 0) {
         this._preIsolationValue = this.getValue();
@@ -2359,7 +2400,7 @@
           this.value = this._preIsolationValue;
           this.refresh();
         } else if (this.value !== this._preIsolationValue) {
-          this.fire(this.value, this._preIsolationValue);
+          this.fire(this.value, this._preIsolationValue, this.key);
         }
         return this._preIsolationValue = null;
       } else if (this._isolationCount > 0) {
@@ -2373,7 +2414,7 @@
 
     return Property;
 
-  })();
+  })(Batman.PropertyEvent);
 
 }).call(this);
 
@@ -2463,7 +2504,11 @@
       Batman.initializeObject(this);
       propertyClass = this.propertyClass || Batman.Keypath;
       properties = (_base = this._batman).properties || (_base.properties = new Batman.SimpleHash);
-      return properties.get(key) || properties.set(key, new propertyClass(this, key));
+      if (properties.objectKey(key)) {
+        return properties.getObject(key) || properties.setObject(key, new propertyClass(this, key));
+      } else {
+        return properties.getString(key) || properties.setString(key, new propertyClass(this, key));
+      }
     },
     get: function(key) {
       return this.property(key).getValue();
@@ -5232,11 +5277,11 @@
       return model.get('storageKey') || Batman.helpers.pluralize(Batman.helpers.underscore(model.get('resourceName')));
     };
 
-    StorageAdapter.prototype.getRecordFromData = function(attributes, constructor) {
+    StorageAdapter.prototype.getRecordsFromData = function(attributeSet, constructor) {
       if (constructor == null) {
         constructor = this.model;
       }
-      return constructor._makeOrFindRecordFromData(attributes);
+      return constructor._makeOrFindRecordsFromData(attributeSet);
     };
 
     StorageAdapter.skipIfError = function(f) {
@@ -5671,7 +5716,7 @@
     }));
 
     RestStorage.prototype.after('readAll', RestStorage.skipIfError(function(env, next) {
-      var jsonRecordAttributes, namespace;
+      var namespace;
 
       namespace = this.collectionJsonNamespace(env.subject);
       env.recordsAttributes = this.extractFromNamespace(env.json, namespace);
@@ -5679,17 +5724,7 @@
         namespace = this.recordJsonNamespace(env.subject.prototype);
         env.recordsAttributes = [this.extractFromNamespace(env.json, namespace)];
       }
-      env.result = env.records = (function() {
-        var _i, _len, _ref, _results;
-
-        _ref = env.recordsAttributes;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          jsonRecordAttributes = _ref[_i];
-          _results.push(this.getRecordFromData(jsonRecordAttributes, env.subject));
-        }
-        return _results;
-      }).call(this);
+      env.result = env.records = this.getRecordsFromData(env.recordsAttributes, env.subject);
       return next();
     }));
 
@@ -5889,19 +5924,7 @@
     }));
 
     LocalStorage.prototype.after('readAll', LocalStorage.skipIfError(function(env, next) {
-      var recordAttributes;
-
-      env.result = env.records = (function() {
-        var _i, _len, _ref, _results;
-
-        _ref = env.recordsAttributes;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          recordAttributes = _ref[_i];
-          _results.push(this.getRecordFromData(recordAttributes, env.subject));
-        }
-        return _results;
-      }).call(this);
+      env.result = env.records = this.getRecordsFromData(env.recordsAttributes, env.subject);
       return next();
     }));
 
@@ -8162,7 +8185,7 @@
       return this._mapIdentities([record])[0];
     };
 
-    Model._makeOrFindRecordFromData = function(attributes) {
+    Model._loadRecord = function(attributes) {
       var existingRecord, id, newRecord;
 
       if (id = attributes[this.primaryKey]) {
@@ -8177,8 +8200,32 @@
       newRecord._withoutDirtyTracking(function() {
         return this.fromJSON(attributes);
       });
+      return newRecord;
+    };
+
+    Model._makeOrFindRecordFromData = function(attributes) {
+      var newRecord;
+
+      newRecord = this._loadRecord(attributes);
       this._mapIdentity(newRecord);
       return newRecord;
+    };
+
+    Model._makeOrFindRecordsFromData = function(attributeSet) {
+      var attributes, newRecords;
+
+      newRecords = (function() {
+        var _i, _len, _results;
+
+        _results = [];
+        for (_i = 0, _len = attributeSet.length; _i < _len; _i++) {
+          attributes = attributeSet[_i];
+          _results.push(this._loadRecord(attributes));
+        }
+        return _results;
+      }).call(this);
+      this._mapIdentities(newRecords);
+      return newRecords;
     };
 
     Model._mapIdentities = function(records) {
@@ -10125,9 +10172,6 @@
       this.cachedPath = this.initialHash ? (paramsMixin = {
         initialHash: this.initialHash
       }, delete this.initialHash, dispatcher.dispatch(params, paramsMixin)) : dispatcher.dispatch(params);
-      if (this._lastRedirect) {
-        this.cachedPath = this._lastRedirect;
-      }
       return this.cachedPath;
     };
 
@@ -10142,6 +10186,9 @@
         this._lastRedirect = pathFromParams;
       }
       path = this.dispatch(params);
+      if (this._lastRedirect) {
+        this.cachedPath = this._lastRedirect;
+      }
       if (!this._lastRedirect || this._lastRedirect === path) {
         this[replaceState ? 'replaceState' : 'pushState'](null, '', path);
       }
@@ -10963,7 +11010,7 @@
     };
 
     function Association(model, label, options) {
-      var defaultOptions, encoder, getAccessor, self;
+      var defaultOptions, encoder, encoderKey, getAccessor, self;
 
       this.model = model;
       this.label = label;
@@ -10988,7 +11035,8 @@
         encode: this.options.saveInline ? this.encoder() : false,
         decode: this.decoder()
       };
-      this.model.encode(this.label, encoder);
+      encoderKey = options.encoderKey || this.label;
+      this.model.encode(encoderKey, encoder);
       self = this;
       getAccessor = function() {
         return self.getAccessor.call(this, self, this.model, this.label);
@@ -13339,519 +13387,6 @@
     return Yield;
 
   })(Batman.Object);
-
-}).call(this);
-
-(function() {
-
-
-}).call(this);
-
-/*!
-  * Reqwest! A general purpose XHR connection manager
-  * (c) Dustin Diaz 2011
-  * https://github.com/ded/reqwest
-  * license MIT
-  */
-!function (name, definition) {
-  if (typeof module != 'undefined') module.exports = definition()
-  else if (typeof define == 'function' && define.amd) define(name, definition)
-  else this[name] = definition()
-}('reqwest', function () {
-
-  var context = this
-    , win = window
-    , doc = document
-    , old = context.reqwest
-    , twoHundo = /^20\d$/
-    , byTag = 'getElementsByTagName'
-    , readyState = 'readyState'
-    , contentType = 'Content-Type'
-    , requestedWith = 'X-Requested-With'
-    , head = doc[byTag]('head')[0]
-    , uniqid = 0
-    , lastValue // data stored by the most recent JSONP callback
-    , xmlHttpRequest = 'XMLHttpRequest'
-    , isArray = typeof Array.isArray == 'function' ? Array.isArray : function (a) {
-        return a instanceof Array
-      }
-    , defaultHeaders = {
-          contentType: 'application/x-www-form-urlencoded'
-        , accept: {
-              '*':  'text/javascript, text/html, application/xml, text/xml, */*'
-            , xml:  'application/xml, text/xml'
-            , html: 'text/html'
-            , text: 'text/plain'
-            , json: 'application/json, text/javascript'
-            , js:   'application/javascript, text/javascript'
-          }
-        , requestedWith: xmlHttpRequest
-      }
-    , xhr = win[xmlHttpRequest] ?
-        function () {
-          return new XMLHttpRequest()
-        } :
-        function () {
-          return new ActiveXObject('Microsoft.XMLHTTP')
-        }
-
-  function handleReadyState(o, success, error) {
-    return function () {
-      if (o && o[readyState] == 4) {
-        if (twoHundo.test(o.status)) {
-          success(o)
-        } else {
-          error(o)
-        }
-      }
-    }
-  }
-
-  function setHeaders(http, o) {
-    var headers = o.headers || {}, h
-    headers.Accept = headers.Accept || defaultHeaders.accept[o.type] || defaultHeaders.accept['*']
-    // breaks cross-origin requests with legacy browsers
-    if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
-    if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
-    for (h in headers) {
-      headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
-    }
-  }
-
-  function generalCallback(data) {
-    lastValue = data
-  }
-
-  function urlappend(url, s) {
-    return url + (/\?/.test(url) ? '&' : '?') + s
-  }
-
-  function handleJsonp(o, fn, err, url) {
-    var reqId = uniqid++
-      , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
-      , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
-      , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
-      , match = url.match(cbreg)
-      , script = doc.createElement('script')
-      , loaded = 0
-
-    if (match) {
-      if (match[3] === '?') {
-        url = url.replace(cbreg, '$1=' + cbval) // wildcard callback func name
-      } else {
-        cbval = match[3] // provided callback func name
-      }
-    } else {
-      url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
-    }
-
-    win[cbval] = generalCallback
-
-    script.type = 'text/javascript'
-    script.src = url
-    script.async = true
-    if (typeof script.onreadystatechange !== 'undefined') {
-        // need this for IE due to out-of-order onreadystatechange(), binding script
-        // execution to an event listener gives us control over when the script
-        // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
-        script.event = 'onclick'
-        script.htmlFor = script.id = '_reqwest_' + reqId
-    }
-
-    script.onload = script.onreadystatechange = function () {
-      if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
-        return false
-      }
-      script.onload = script.onreadystatechange = null
-      script.onclick && script.onclick()
-      // Call the user callback with the last value stored and clean up values and scripts.
-      o.success && o.success(lastValue)
-      lastValue = undefined
-      head.removeChild(script)
-      loaded = 1
-    }
-
-    // Add the script to the DOM head
-    head.appendChild(script)
-  }
-
-  function getRequest(o, fn, err) {
-    var method = (o.method || 'GET').toUpperCase()
-      , url = typeof o === 'string' ? o : o.url
-      // convert non-string objects to query-string form unless o.processData is false
-      , data = (o.processData !== false && o.data && typeof o.data !== 'string')
-        ? reqwest.toQueryString(o.data)
-        : (o.data || null)
-      , http
-
-    // if we're working on a GET request and we have data then we should append
-    // query string to end of URL and not post data
-    if ((o.type == 'jsonp' || method == 'GET') && data) {
-      url = urlappend(url, data)
-      data = null
-    }
-
-    if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
-
-    http = xhr()
-    http.open(method, url, true)
-    setHeaders(http, o)
-    http.onreadystatechange = handleReadyState(http, fn, err)
-    o.before && o.before(http)
-    http.send(data)
-    return http
-  }
-
-  function Reqwest(o, fn) {
-    this.o = o
-    this.fn = fn
-    init.apply(this, arguments)
-  }
-
-  function setType(url) {
-    var m = url.match(/\.(json|jsonp|html|xml)(\?|$)/)
-    return m ? m[1] : 'js'
-  }
-
-  function init(o, fn) {
-    this.url = typeof o == 'string' ? o : o.url
-    this.timeout = null
-    var type = o.type || setType(this.url)
-      , self = this
-    fn = fn || function () {}
-
-    if (o.timeout) {
-      this.timeout = setTimeout(function () {
-        self.abort()
-      }, o.timeout)
-    }
-
-    function complete(resp) {
-      o.timeout && clearTimeout(self.timeout)
-      self.timeout = null
-      o.complete && o.complete(resp)
-    }
-
-    function success(resp) {
-      var r = resp.responseText
-      if (r) {
-        switch (type) {
-        case 'json':
-          try {
-            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
-          } catch (err) {
-            return error(resp, 'Could not parse JSON in response', err)
-          }
-          break;
-        case 'js':
-          resp = eval(r)
-          break;
-        case 'html':
-          resp = r
-          break;
-        }
-      }
-
-      fn(resp)
-      o.success && o.success(resp)
-
-      complete(resp)
-    }
-
-    function error(resp, msg, t) {
-      o.error && o.error(resp, msg, t)
-      complete(resp)
-    }
-
-    this.request = getRequest(o, success, error)
-  }
-
-  Reqwest.prototype = {
-    abort: function () {
-      this.request.abort()
-    }
-
-  , retry: function () {
-      init.call(this, this.o, this.fn)
-    }
-  }
-
-  function reqwest(o, fn) {
-    return new Reqwest(o, fn)
-  }
-
-  // normalize newline variants according to spec -> CRLF
-  function normalize(s) {
-    return s ? s.replace(/\r?\n/g, '\r\n') : ''
-  }
-
-  function serial(el, cb) {
-    var n = el.name
-      , t = el.tagName.toLowerCase()
-      , optCb = function(o) {
-          // IE gives value="" even where there is no value attribute
-          // 'specified' ref: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-862529273
-          if (o && !o.disabled)
-            cb(n, normalize(o.attributes.value && o.attributes.value.specified ? o.value : o.text))
-        }
-
-    // don't serialize elements that are disabled or without a name
-    if (el.disabled || !n) return;
-
-    switch (t) {
-    case 'input':
-      if (!/reset|button|image|file/i.test(el.type)) {
-        var ch = /checkbox/i.test(el.type)
-          , ra = /radio/i.test(el.type)
-          , val = el.value;
-        // WebKit gives us "" instead of "on" if a checkbox has no value, so correct it here
-        (!(ch || ra) || el.checked) && cb(n, normalize(ch && val === '' ? 'on' : val))
-      }
-      break;
-    case 'textarea':
-      cb(n, normalize(el.value))
-      break;
-    case 'select':
-      if (el.type.toLowerCase() === 'select-one') {
-        optCb(el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null)
-      } else {
-        for (var i = 0; el.length && i < el.length; i++) {
-          el.options[i].selected && optCb(el.options[i])
-        }
-      }
-      break;
-    }
-  }
-
-  // collect up all form elements found from the passed argument elements all
-  // the way down to child elements; pass a '<form>' or form fields.
-  // called with 'this'=callback to use for serial() on each element
-  function eachFormElement() {
-    var cb = this
-      , e, i, j
-      , serializeSubtags = function(e, tags) {
-        for (var i = 0; i < tags.length; i++) {
-          var fa = e[byTag](tags[i])
-          for (j = 0; j < fa.length; j++) serial(fa[j], cb)
-        }
-      }
-
-    for (i = 0; i < arguments.length; i++) {
-      e = arguments[i]
-      if (/input|select|textarea/i.test(e.tagName)) serial(e, cb)
-      serializeSubtags(e, [ 'input', 'select', 'textarea' ])
-    }
-  }
-
-  // standard query string style serialization
-  function serializeQueryString() {
-    return reqwest.toQueryString(reqwest.serializeArray.apply(null, arguments))
-  }
-
-  // { 'name': 'value', ... } style serialization
-  function serializeHash() {
-    var hash = {}
-    eachFormElement.apply(function (name, value) {
-      if (name in hash) {
-        hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
-        hash[name].push(value)
-      } else hash[name] = value
-    }, arguments)
-    return hash
-  }
-
-  // [ { name: 'name', value: 'value' }, ... ] style serialization
-  reqwest.serializeArray = function () {
-    var arr = []
-    eachFormElement.apply(function(name, value) {
-      arr.push({name: name, value: value})
-    }, arguments)
-    return arr
-  }
-
-  reqwest.serialize = function () {
-    if (arguments.length === 0) return ''
-    var opt, fn
-      , args = Array.prototype.slice.call(arguments, 0)
-
-    opt = args.pop()
-    opt && opt.nodeType && args.push(opt) && (opt = null)
-    opt && (opt = opt.type)
-
-    if (opt == 'map') fn = serializeHash
-    else if (opt == 'array') fn = reqwest.serializeArray
-    else fn = serializeQueryString
-
-    return fn.apply(null, args)
-  }
-
-  reqwest.toQueryString = function (o) {
-    var qs = '', i
-      , enc = encodeURIComponent
-      , push = function (k, v) {
-          qs += enc(k) + '=' + enc(v) + '&'
-        }
-
-    if (isArray(o)) {
-      for (i = 0; o && i < o.length; i++) push(o[i].name, o[i].value)
-    } else {
-      for (var k in o) {
-        if (!Object.hasOwnProperty.call(o, k)) continue;
-        var v = o[k]
-        if (isArray(v)) {
-          for (i = 0; i < v.length; i++) push(k, v[i])
-        } else push(k, o[k])
-      }
-    }
-
-    // spaces should be + according to spec
-    return qs.replace(/&$/, '').replace(/%20/g,'+')
-  }
-
-  // jQuery and Zepto compatibility, differences can be remapped here so you can call
-  // .ajax.compat(options, callback)
-  reqwest.compat = function (o, fn) {
-    if (o) {
-      o.type && (o.method = o.type) && delete o.type
-      o.dataType && (o.type = o.dataType)
-      o.jsonpCallback && (o.jsonpCallbackName = o.jsonpCallback) && delete o.jsonpCallback
-      o.jsonp && (o.jsonpCallback = o.jsonp)
-    }
-    return new Reqwest(o, fn)
-  }
-
-  return reqwest
-});
-
-(function() {
-  var _ref, _ref1;
-
-  Batman.extend(Batman.DOM, {
-    querySelectorAll: (typeof window !== "undefined" && window !== null ? (_ref = window.document) != null ? _ref.querySelectorAll : void 0 : void 0) != null ? function(node, selector) {
-      return node.querySelectorAll(selector);
-    } : function() {
-      return Batman.developer.error("Please include either jQuery or a querySelectorAll polyfill, or set Batman.DOM.querySelectorAll to return an empty array.");
-    },
-    querySelector: (typeof window !== "undefined" && window !== null ? (_ref1 = window.document) != null ? _ref1.querySelector : void 0 : void 0) != null ? function(node, selector) {
-      return node.querySelector(selector);
-    } : function() {
-      return Batman.developer.error("Please include either jQuery or a querySelector polyfill, or set Batman.DOM.querySelector to an empty function.");
-    },
-    setInnerHTML: function(node, html) {
-      var child, childNodes, result, _i, _j, _len, _len1;
-
-      childNodes = (function() {
-        var _i, _len, _ref2, _results;
-
-        _ref2 = node.childNodes;
-        _results = [];
-        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-          child = _ref2[_i];
-          _results.push(child);
-        }
-        return _results;
-      })();
-      for (_i = 0, _len = childNodes.length; _i < _len; _i++) {
-        child = childNodes[_i];
-        Batman.DOM.willRemoveNode(child);
-      }
-      result = node.innerHTML = html;
-      for (_j = 0, _len1 = childNodes.length; _j < _len1; _j++) {
-        child = childNodes[_j];
-        Batman.DOM.didRemoveNode(child);
-      }
-      return result;
-    },
-    removeNode: function(node) {
-      var _ref2;
-
-      Batman.DOM.willRemoveNode(node);
-      if ((_ref2 = node.parentNode) != null) {
-        _ref2.removeChild(node);
-      }
-      return Batman.DOM.didRemoveNode(node);
-    },
-    destroyNode: function(node) {
-      Batman.DOM.willDestroyNode(node);
-      Batman.DOM.removeNode(node);
-      return Batman.DOM.didDestroyNode(node);
-    },
-    appendChild: function(parent, child) {
-      Batman.DOM.willInsertNode(child);
-      parent.appendChild(child);
-      return Batman.DOM.didInsertNode(child);
-    },
-    textContent: function(node) {
-      return node.textContent;
-    }
-  });
-
-}).call(this);
-
-(function() {
-  Batman.Request.prototype._parseResponseHeaders = function(xhr) {
-    var headers;
-
-    return headers = xhr.getAllResponseHeaders().split('\n').reduce(function(acc, header) {
-      var key, matches, value;
-
-      if (matches = header.match(/([^:]*):\s*(.*)/)) {
-        key = matches[1];
-        value = matches[2];
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
-  };
-
-  Batman.Request.prototype.send = function(data) {
-    var options, xhr, _ref,
-      _this = this;
-
-    if (data == null) {
-      data = this.get('data');
-    }
-    this.fire('loading');
-    options = {
-      url: this.get('url'),
-      method: this.get('method'),
-      type: this.get('type'),
-      headers: this.get('headers'),
-      success: function(response) {
-        _this.mixin({
-          xhr: xhr,
-          response: response,
-          status: typeof xhr !== "undefined" && xhr !== null ? xhr.status : void 0,
-          responseHeaders: _this._parseResponseHeaders(xhr)
-        });
-        return _this.fire('success', response);
-      },
-      error: function(xhr) {
-        _this.mixin({
-          xhr: xhr,
-          response: xhr.responseText || xhr.content,
-          status: xhr.status,
-          responseHeaders: _this._parseResponseHeaders(xhr)
-        });
-        xhr.request = _this;
-        return _this.fire('error', xhr);
-      },
-      complete: function() {
-        return _this.fire('loaded');
-      }
-    };
-    if ((_ref = options.method) === 'PUT' || _ref === 'POST') {
-      if (this.hasFileUploads()) {
-        options.data = this.constructor.objectToFormData(data);
-      } else {
-        options.contentType = this.get('contentType');
-        options.data = Batman.URI.queryFromParams(data);
-      }
-    } else {
-      options.data = data;
-    }
-    return xhr = (reqwest(options)).request;
-  };
 
 }).call(this);
 
