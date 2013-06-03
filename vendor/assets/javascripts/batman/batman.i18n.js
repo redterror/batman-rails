@@ -17,7 +17,6 @@
       },
       unset: function() {
         var x;
-
         x = this.locale;
         delete this.locale;
         return x;
@@ -30,7 +29,6 @@
 
     I18N.translate = function(key, values) {
       var translation;
-
       translation = this.get("translations." + key);
       if (translation == null) {
         Batman.developer.warn("Warning, undefined translation " + key + " when in local " + (this.get('locale')));
@@ -41,7 +39,6 @@
 
     I18N.enable = function() {
       var _this = this;
-
       this._oldTranslation = Batman.translate;
       this.locales.set('en', Batman.translate.messages);
       return Batman.translate = function() {
@@ -73,7 +70,6 @@
     LocalesStorage.accessor({
       get: function(k) {
         var _this = this;
-
         if (!this._storage[k]) {
           this._storage[k] = {};
           new Batman.Request({
@@ -93,7 +89,6 @@
       },
       unset: function(k) {
         var x;
-
         x = this._storage[k];
         delete this._storage[k];
         return x;
