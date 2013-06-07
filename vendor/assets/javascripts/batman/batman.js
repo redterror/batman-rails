@@ -1713,7 +1713,7 @@
     SimpleSet.prototype.add = function() {
       var addedItems, items;
       items = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      addedItems = this._add.apply(this, items);
+      addedItems = this._add(items);
       if (this.fire && addedItems.length !== 0) {
         this.fire('change', this, this);
         this.fire.apply(this, ['itemsWereAdded'].concat(__slice.call(addedItems)));
@@ -1721,9 +1721,19 @@
       return addedItems;
     };
 
-    SimpleSet.prototype._add = function() {
-      var addedItems, item, items, _i, _len;
+    SimpleSet.prototype.remove = function() {
+      var items, removedItems;
       items = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      removedItems = this._remove(items);
+      if (this.fire && removedItems.length !== 0) {
+        this.fire('change', this, this);
+        this.fire.apply(this, ['itemsWereRemoved'].concat(__slice.call(removedItems)));
+      }
+      return removedItems;
+    };
+
+    SimpleSet.prototype._add = function(items) {
+      var addedItems, item, _i, _len;
       addedItems = [];
       for (_i = 0, _len = items.length; _i < _len; _i++) {
         item = items[_i];
@@ -1737,20 +1747,8 @@
       return addedItems;
     };
 
-    SimpleSet.prototype.remove = function() {
-      var items, removedItems;
-      items = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      removedItems = this._remove.apply(this, items);
-      if (this.fire && removedItems.length !== 0) {
-        this.fire('change', this, this);
-        this.fire.apply(this, ['itemsWereRemoved'].concat(__slice.call(removedItems)));
-      }
-      return removedItems;
-    };
-
-    SimpleSet.prototype._remove = function() {
-      var index, item, items, removedItems, _i, _len;
-      items = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    SimpleSet.prototype._remove = function(items) {
+      var index, item, removedItems, _i, _len;
       removedItems = [];
       for (_i = 0, _len = items.length; _i < _len; _i++) {
         item = items[_i];
@@ -1766,8 +1764,8 @@
 
     SimpleSet.prototype.addAndRemove = function(itemsToAdd, itemsToRemove) {
       var itemsAdded, itemsRemoved;
-      itemsAdded = this._add.apply(this, itemsToAdd || []);
-      itemsRemoved = this._remove.apply(this, itemsToRemove || []);
+      itemsAdded = this._add(itemsToAdd || []);
+      itemsRemoved = this._remove(itemsToRemove || []);
       if (this.fire) {
         if (itemsAdded.length > 0 || itemsRemoved.length > 0) {
           this.fire('change', this, this);
@@ -6869,6 +6867,7 @@
       if (frame) {
         if (frame.operationOccurred) {
           Batman.developer.warn("Warning! Trying to redirect but an action has already been taken during " + (this.get('routingKey')) + "." + (frame.action || this.get('action')));
+          return;
         }
         frame.startAndFinishOperation();
         if (this._afterFilterRedirect != null) {
@@ -7792,7 +7791,7 @@
         options = {};
       }
       Batman.developer.assert(callback, "Must call find with a callback!");
-      record = new this();
+      record = new this;
       record._withoutDirtyTracking(function() {
         return this.set('id', id);
       });
@@ -7817,75 +7816,63 @@
       var _this = this;
       this.fire('loading', options);
       return this._doStorageOperation('readAll', options, function(err, records, env) {
-        var mappedRecords;
         if (err != null) {
           _this.fire('error', err);
           return typeof callback === "function" ? callback(err, []) : void 0;
         } else {
-          mappedRecords = _this._mapIdentities(records);
-          _this.fire('loaded', mappedRecords, env);
-          return typeof callback === "function" ? callback(err, mappedRecords, env) : void 0;
+          _this.fire('loaded', records, env);
+          return typeof callback === "function" ? callback(err, records, env) : void 0;
         }
       });
     };
 
     Model.create = function(attrs, callback) {
-      var obj, _ref;
+      var record, _ref;
       if (!callback) {
         _ref = [{}, attrs], attrs = _ref[0], callback = _ref[1];
       }
-      obj = new this(attrs);
-      obj.save(callback);
-      return obj;
+      record = new this(attrs);
+      record.save(callback);
+      return record;
     };
 
     Model.findOrCreate = function(attrs, callback) {
-      var foundRecord, record;
-      record = new this(attrs);
-      if (record.isNew()) {
-        record.save(callback);
+      var record;
+      record = this._loadIdentity(attrs[this.primaryKey]);
+      if (record) {
+        record.mixin(attrs);
+        callback(void 0, record);
       } else {
-        foundRecord = this._mapIdentity(record);
-        callback(void 0, foundRecord);
+        record = new this(attrs);
+        record.save(callback);
       }
       return record;
     };
 
     Model.createFromJSON = function(json) {
-      var record;
-      record = new this;
-      record._withoutDirtyTracking(function() {
-        return this.fromJSON(json);
-      });
-      return this._mapIdentity(record);
+      return this._makeOrFindRecordFromData(json);
     };
 
-    Model._mapIdentity = function(record) {
-      return this._mapIdentities([record])[0];
+    Model._loadIdentity = function(id) {
+      return this.get('loaded.indexedByUnique.id').get(id);
     };
 
     Model._loadRecord = function(attributes) {
-      var existingRecord, id, newRecord;
+      var id, record;
       if (id = attributes[this.primaryKey]) {
-        if (existingRecord = this.get('loaded.indexedByUnique.id').get(id)) {
-          existingRecord._withoutDirtyTracking(function() {
-            return this.fromJSON(attributes);
-          });
-          return existingRecord;
-        }
+        record = this._loadIdentity(id);
       }
-      newRecord = new this;
-      newRecord._withoutDirtyTracking(function() {
+      record || (record = new this);
+      record._withoutDirtyTracking(function() {
         return this.fromJSON(attributes);
       });
-      return newRecord;
+      return record;
     };
 
     Model._makeOrFindRecordFromData = function(attributes) {
-      var newRecord;
-      newRecord = this._loadRecord(attributes);
-      this._mapIdentity(newRecord);
-      return newRecord;
+      var record;
+      record = this._loadRecord(attributes);
+      return this._mapIdentity(record);
     };
 
     Model._makeOrFindRecordsFromData = function(attributeSet) {
@@ -7903,17 +7890,39 @@
       return newRecords;
     };
 
+    Model._mapIdentity = function(record) {
+      var existing, id;
+      if ((id = record.get('id')) != null) {
+        if (existing = this._loadIdentity(id)) {
+          existing._withoutDirtyTracking(function() {
+            var attributes, _ref;
+            attributes = (_ref = record.get('attributes')) != null ? _ref.toObject() : void 0;
+            if (attributes) {
+              return this.mixin(attributes);
+            }
+          });
+          record = existing;
+        } else {
+          this.get('loaded').add(record);
+        }
+      }
+      return record;
+    };
+
     Model._mapIdentities = function(records) {
-      var existing, id, index, newRecords, record, _i, _len, _ref, _ref1;
+      var existing, id, index, newRecords, record, _i, _len, _ref;
       newRecords = [];
       for (index = _i = 0, _len = records.length; _i < _len; index = ++_i) {
         record = records[index];
         if ((id = record.get('id')) == null) {
           continue;
-        } else if (existing = (_ref = this.get('loaded.indexedBy.id').get(id)) != null ? _ref.toArray()[0] : void 0) {
+        } else if (existing = this._loadIdentity(id)) {
           existing._withoutDirtyTracking(function() {
-            var _ref1;
-            return this.updateAttributes(((_ref1 = record.get('attributes')) != null ? _ref1.toObject() : void 0) || {});
+            var attributes, _ref;
+            attributes = (_ref = record.get('attributes')) != null ? _ref.toObject() : void 0;
+            if (attributes) {
+              return this.mixin(attributes);
+            }
           });
           records[index] = existing;
         } else {
@@ -7921,7 +7930,7 @@
         }
       }
       if (newRecords.length) {
-        (_ref1 = this.get('loaded')).add.apply(_ref1, newRecords);
+        (_ref = this.get('loaded')).add.apply(_ref, newRecords);
       }
       return records;
     };
@@ -8190,6 +8199,7 @@
           if (!err) {
             _this.get('lifecycle').loaded();
             record = _this.constructor._mapIdentity(record);
+            record.get('errors').clear();
           } else {
             _this.get('lifecycle').error();
           }
@@ -10845,7 +10855,7 @@
       var association;
       association = this;
       return function(data, key, _, __, parentRecord) {
-        var children, id, jsonObject, newChildren, record, recordsToAdd, recordsToMap, relatedModel, relatedRecords, _i, _len, _ref;
+        var children, id, jsonObject, newChildren, record, recordsToAdd, recordsToMap, relatedModel, _i, _len, _ref;
         if (!(relatedModel = association.getRelatedModel())) {
           Batman.developer.error("Can't decode model " + association.options.name + " because it hasn't been loaded yet!");
           return;
@@ -10856,11 +10866,10 @@
         }).toArray();
         recordsToMap = [];
         recordsToAdd = [];
-        relatedRecords = relatedModel.get('loaded.indexedByUnique.id');
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           jsonObject = data[_i];
           id = jsonObject[relatedModel.primaryKey];
-          record = relatedRecords.get(id);
+          record = relatedModel._loadIdentity(id);
           if (record != null) {
             recordsToAdd.push(record);
           } else {
@@ -10998,7 +11007,7 @@
             return;
           }
           id = jsonObject[relatedModel.primaryKey];
-          record = relatedModel.get('loaded.indexedByUnique.id').get(id);
+          record = relatedModel._loadIdentity(id);
           if (record != null) {
             record._withoutDirtyTracking(function() {
               return this.fromJSON(jsonObject);
