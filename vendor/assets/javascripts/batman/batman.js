@@ -7791,9 +7791,10 @@
     };
 
     Model._makeOrFindRecordFromData = function(attributes) {
-      var existingRecord, newRecord;
-      if (attributes[this.primaryKey]) {
-        existingRecord = this.get('loaded.indexedByUnique.id').get('id') != null;
+      var existingRecord, id, newRecord;
+      id = attributes[this.primaryKey];
+      if (id) {
+        existingRecord = this.get('loaded.indexedByUnique.id').get(id);
         if (existingRecord) {
           existingRecord._withoutDirtyTracking(function() {
             return this.fromJSON(attributes);
