@@ -2115,7 +2115,8 @@
       if (this.isIsolated()) {
         return this._needsRefresh = true;
       } else if (!this.isFinal() && !this.hasObservers()) {
-        return this.cached = false;
+        this.cached = false;
+        return this._removeHandlers();
       } else {
         return this.refresh();
       }
