@@ -1,9 +1,9 @@
 (function() {
-  var translationsAlias,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.I18N = (function(_super) {
+
     __extends(I18N, _super);
 
     I18N.defaultLocale = "en";
@@ -30,7 +30,7 @@
     I18N.translate = function(key, values) {
       var translation;
       translation = this.get("translations." + key);
-      if (translation == null) {
+      if (!(translation != null)) {
         Batman.developer.warn("Warning, undefined translation " + key + " when in local " + (this.get('locale')));
         return "";
       }
@@ -59,6 +59,7 @@
   })(Batman.Object);
 
   Batman.I18N.LocalesStorage = (function(_super) {
+
     __extends(LocalesStorage, _super);
 
     function LocalesStorage() {
@@ -103,12 +104,6 @@
 
   Batman.Filters.t = Batman.Filters.translate = Batman.Filters.interpolate;
 
-  translationsAlias = Batman();
-
-  translationsAlias.accessor('t', function() {
-    return Batman.I18N.get('translations');
-  });
-
-  Batman.RenderContext.base = Batman.RenderContext.base.descend(translationsAlias);
+  Batman.config.translations = true;
 
 }).call(this);

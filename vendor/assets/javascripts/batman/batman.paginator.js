@@ -1,17 +1,17 @@
 (function() {
-  var _ref, _ref1,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.Paginator = (function(_super) {
+
     __extends(Paginator, _super);
 
     function Paginator() {
-      _ref = Paginator.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return Paginator.__super__.constructor.apply(this, arguments);
     }
 
     Paginator.Range = (function() {
+
       function Range(offset, limit) {
         this.offset = offset;
         this.limit = limit;
@@ -27,6 +27,7 @@
     })();
 
     Paginator.Cache = (function(_super1) {
+
       __extends(Cache, _super1);
 
       function Cache(offset, limit, items) {
@@ -80,8 +81,8 @@
     };
 
     Paginator.prototype._load = function(offset, limit) {
-      var _ref1;
-      if ((_ref1 = this.loadingRange) != null ? _ref1.coversOffsetAndLimit(offset, limit) : void 0) {
+      var _ref;
+      if ((_ref = this.loadingRange) != null ? _ref.coversOffsetAndLimit(offset, limit) : void 0) {
         return;
       }
       this.markAsLoadingOffsetAndLimit(offset, limit);
@@ -152,11 +153,11 @@
   })(Batman.Object);
 
   Batman.ModelPaginator = (function(_super) {
+
     __extends(ModelPaginator, _super);
 
     function ModelPaginator() {
-      _ref1 = ModelPaginator.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      return ModelPaginator.__super__.constructor.apply(this, arguments);
     }
 
     ModelPaginator.prototype.cachePadding = 0;
@@ -175,12 +176,12 @@
     };
 
     ModelPaginator.prototype.loadItemsForOffsetAndLimit = function(offset, limit) {
-      var k, params, v, _ref2,
+      var k, params, v, _ref,
         _this = this;
       params = this.paramsForOffsetAndLimit(offset, limit);
-      _ref2 = this.params;
-      for (k in _ref2) {
-        v = _ref2[k];
+      _ref = this.params;
+      for (k in _ref) {
+        v = _ref[k];
         params[k] = v;
       }
       return this.model.load(params, function(err, records) {
