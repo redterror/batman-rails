@@ -1,5 +1,4 @@
 (function() {
-
   Batman.extend(Batman.DOM, {
     querySelectorAll: function(node, selector) {
       return jQuery(selector, node);

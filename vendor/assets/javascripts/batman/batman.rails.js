@@ -1,5 +1,5 @@
 (function() {
-  var date_re, numericKeys,
+  var date_re, numericKeys, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -44,11 +44,11 @@
   });
 
   Batman.RailsStorage = (function(_super) {
-
     __extends(RailsStorage, _super);
 
     function RailsStorage() {
-      return RailsStorage.__super__.constructor.apply(this, arguments);
+      _ref = RailsStorage.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     RailsStorage.prototype.urlForRecord = function() {
@@ -77,14 +77,15 @@
     };
 
     RailsStorage.prototype.after('update', 'create', function(env, next) {
-      var error, errorsArray, key, record, response, validationError, validationErrors, _i, _len;
+      var error, errorsArray, extractionError, key, record, response, validationError, validationErrors, _i, _len;
       record = env.subject;
       error = env.error, response = env.response;
       if (error) {
         if (error instanceof Batman.StorageAdapter.UnprocessableRecordError) {
           try {
             validationErrors = this._errorsFrom422Response(response);
-          } catch (extractionError) {
+          } catch (_error) {
+            extractionError = _error;
             env.error = extractionError;
             return next();
           }

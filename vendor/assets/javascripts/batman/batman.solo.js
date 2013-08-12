@@ -404,7 +404,6 @@
 }).call(this);
 
 (function() {
-
   Batman.Request.prototype._parseResponseHeaders = function(xhr) {
     var headers;
     return headers = xhr.getAllResponseHeaders().split('\n').reduce(function(acc, header) {

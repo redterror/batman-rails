@@ -52,7 +52,6 @@
   var _Batman;
 
   Batman._Batman = _Batman = (function() {
-
     function _Batman(object) {
       this.object = object;
     }
@@ -504,7 +503,6 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   Batman.Inflector = (function() {
-
     Inflector.prototype.plural = function(regex, replacement) {
       return this._plural.unshift([regex, replacement]);
     };
@@ -929,9 +927,7 @@
 }).call(this);
 
 (function() {
-
   Batman.Event = (function() {
-
     Event.forBaseAndKey = function(base, key) {
       if (base.isEventEmitter) {
         return base.event(key);
@@ -1067,15 +1063,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.PropertyEvent = (function(_super) {
-
     __extends(PropertyEvent, _super);
 
     function PropertyEvent() {
-      return PropertyEvent.__super__.constructor.apply(this, arguments);
+      _ref = PropertyEvent.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     PropertyEvent.prototype.eachHandler = function(iterator) {
@@ -1390,7 +1387,6 @@
   _objectToString = Object.prototype.toString;
 
   Batman.SimpleHash = (function() {
-
     function SimpleHash(obj) {
       this._storage = {};
       this.length = 0;
@@ -1693,7 +1689,6 @@
     __slice = [].slice;
 
   Batman.AssociationCurator = (function(_super) {
-
     __extends(AssociationCurator, _super);
 
     AssociationCurator.availableAssociations = ['belongsTo', 'hasOne', 'hasMany'];
@@ -1760,7 +1755,6 @@
   var __slice = [].slice;
 
   Batman.SimpleSet = (function() {
-
     function SimpleSet() {
       var item, itemsToAdd;
       this._storage = [];
@@ -1963,7 +1957,6 @@
   SOURCE_TRACKER_STACK_VALID = true;
 
   Batman.Property = (function(_super) {
-
     __extends(Property, _super);
 
     Property._sourceTrackerStack = SOURCE_TRACKER_STACK;
@@ -2404,7 +2397,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.Keypath = (function(_super) {
-
     __extends(Keypath, _super);
 
     function Keypath(base, key) {
@@ -2533,7 +2525,6 @@
 }).call(this);
 
 (function() {
-
   Batman.DOM = {
     textInputTypes: ['text', 'search', 'tel', 'url', 'email', 'password'],
     scrollIntoView: function(elementID) {
@@ -2666,9 +2657,7 @@
 }).call(this);
 
 (function() {
-
   Batman.DOM.ReaderBindingDefinition = (function() {
-
     function ReaderBindingDefinition(node, keyPath, view) {
       this.node = node;
       this.keyPath = keyPath;
@@ -2926,9 +2915,7 @@
 }).call(this);
 
 (function() {
-
   Batman.DOM.AttrReaderBindingDefinition = (function() {
-
     function AttrReaderBindingDefinition(node, attr, keyPath, view) {
       this.node = node;
       this.attr = attr;
@@ -3030,17 +3017,17 @@
     return function(defaultAccessor) {
       return {
         get: function(key) {
-          var asyncDeliver, existingValue, newValue, _base, _base1, _ref, _ref1,
+          var asyncDeliver, existingValue, newValue, _base, _base1,
             _this = this;
           if ((existingValue = defaultAccessor.get.apply(this, arguments)) != null) {
             return existingValue;
           }
           asyncDeliver = false;
           newValue = void 0;
-          if ((_ref = (_base = this._batman).promises) == null) {
+          if ((_base = this._batman).promises == null) {
             _base.promises = {};
           }
-          if ((_ref1 = (_base1 = this._batman.promises)[key]) == null) {
+          if ((_base1 = this._batman.promises)[key] == null) {
             _base1[key] = (function() {
               var deliver, returnValue;
               deliver = function(err, result) {
@@ -3080,7 +3067,7 @@
     _defineAccessor: function() {
       var accessor, key, keys, _base, _i, _j, _len, _ref;
       keys = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), accessor = arguments[_i++];
-      if (!(accessor != null)) {
+      if (accessor == null) {
         return Batman.Property.defaultAccessorForBase(this);
       } else if (keys.length === 0 && ((_ref = Batman.typeOf(accessor)) !== 'Object' && _ref !== 'Function')) {
         return Batman.Property.accessorForBaseAndKey(this, accessor);
@@ -3200,9 +3187,9 @@
     counter = 0;
 
     BatmanObject.prototype._batmanID = function() {
-      var _base, _ref;
+      var _base;
       this._batman.check(this);
-      if ((_ref = (_base = this._batman).id) == null) {
+      if ((_base = this._batman).id == null) {
         _base.id = counter++;
       }
       return this._batman.id;
@@ -3377,7 +3364,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.ValidationError = (function(_super) {
-
     __extends(ValidationError, _super);
 
     ValidationError.accessor('fullMessage', function() {
@@ -3412,11 +3398,9 @@
     __slice = [].slice;
 
   Batman.StorageAdapter = (function(_super) {
-
     __extends(StorageAdapter, _super);
 
     StorageAdapter.StorageError = (function(_super1) {
-
       __extends(StorageError, _super1);
 
       StorageError.prototype.name = "StorageError";
@@ -3431,7 +3415,6 @@
     })(Error);
 
     StorageAdapter.RecordExistsError = (function(_super1) {
-
       __extends(RecordExistsError, _super1);
 
       RecordExistsError.prototype.name = 'RecordExistsError';
@@ -3445,7 +3428,6 @@
     })(StorageAdapter.StorageError);
 
     StorageAdapter.NotFoundError = (function(_super1) {
-
       __extends(NotFoundError, _super1);
 
       NotFoundError.prototype.name = 'NotFoundError';
@@ -3459,7 +3441,6 @@
     })(StorageAdapter.StorageError);
 
     StorageAdapter.NotAllowedError = (function(_super1) {
-
       __extends(NotAllowedError, _super1);
 
       NotAllowedError.prototype.name = "NotAllowedError";
@@ -3473,7 +3454,6 @@
     })(StorageAdapter.StorageError);
 
     StorageAdapter.NotAcceptableError = (function(_super1) {
-
       __extends(NotAcceptableError, _super1);
 
       NotAcceptableError.prototype.name = "NotAcceptableError";
@@ -3487,7 +3467,6 @@
     })(StorageAdapter.StorageError);
 
     StorageAdapter.UnprocessableRecordError = (function(_super1) {
-
       __extends(UnprocessableRecordError, _super1);
 
       UnprocessableRecordError.prototype.name = "UnprocessableRecordError";
@@ -3501,7 +3480,6 @@
     })(StorageAdapter.StorageError);
 
     StorageAdapter.InternalStorageError = (function(_super1) {
-
       __extends(InternalStorageError, _super1);
 
       InternalStorageError.prototype.name = "InternalStorageError";
@@ -3515,7 +3493,6 @@
     })(StorageAdapter.StorageError);
 
     StorageAdapter.NotImplementedError = (function(_super1) {
-
       __extends(NotImplementedError, _super1);
 
       NotImplementedError.prototype.name = "NotImplementedError";
@@ -3694,7 +3671,6 @@
     __extends(RestStorage, _super);
 
     RestStorage.CommunicationError = (function(_super1) {
-
       __extends(CommunicationError, _super1);
 
       CommunicationError.prototype.name = 'CommunicationError';
@@ -3886,10 +3862,12 @@
     };
 
     RestStorage.prototype.before('all', RestStorage.skipIfError(function(env, next) {
+      var error;
       if (!env.options.url) {
         try {
           env.options.url = env.subject.prototype ? this.urlForCollection(env.subject, env) : this.urlForRecord(env.subject, env);
-        } catch (error) {
+        } catch (_error) {
+          error = _error;
           env.error = error;
         }
       }
@@ -3927,15 +3905,16 @@
     }));
 
     RestStorage.prototype.after('all', RestStorage.skipIfError(function(env, next) {
-      var json;
-      if (!(env.data != null)) {
+      var error, json;
+      if (env.data == null) {
         return next();
       }
       if (typeof env.data === 'string') {
         if (env.data.length > 0) {
           try {
             json = this._jsonToAttributes(env.data);
-          } catch (error) {
+          } catch (_error) {
+            error = _error;
             env.error = error;
             return next();
           }
@@ -4031,7 +4010,7 @@
 
     RestStorage.prototype._errorFor = function(error, env) {
       var errorClass, request;
-      if (error instanceof Error || !(error.request != null)) {
+      if (error instanceof Error || (error.request == null)) {
         return error;
       }
       if (errorClass = this.constructor._statusCodeErrors[error.request.status]) {
@@ -4054,7 +4033,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.LocalStorage = (function(_super) {
-
     __extends(LocalStorage, _super);
 
     function LocalStorage() {
@@ -4144,10 +4122,12 @@
     }));
 
     LocalStorage.prototype.after('read', LocalStorage.skipIfError(function(env, next) {
+      var error;
       if (typeof env.recordAttributes === 'string') {
         try {
           env.recordAttributes = this._jsonToAttributes(env.recordAttributes);
-        } catch (error) {
+        } catch (_error) {
+          error = _error;
           env.error = error;
           return next();
         }
@@ -4202,9 +4182,11 @@
     });
 
     LocalStorage.prototype.readAll = LocalStorage.skipIfError(function(env, next) {
+      var error;
       try {
         arguments[0].recordsAttributes = this._storageEntriesMatching(env.subject, env.options.data);
-      } catch (error) {
+      } catch (_error) {
+        error = _error;
         arguments[0].error = error;
       }
       return next();
@@ -4221,7 +4203,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.SessionStorage = (function(_super) {
-
     __extends(SessionStorage, _super);
 
     function SessionStorage() {
@@ -4239,7 +4220,6 @@
 }).call(this);
 
 (function() {
-
   Batman.Encoders = new Batman.Object;
 
 }).call(this);
@@ -4249,7 +4229,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.ParamsReplacer = (function(_super) {
-
     __extends(ParamsReplacer, _super);
 
     function ParamsReplacer(navigator, params) {
@@ -4311,15 +4290,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.ParamsPusher = (function(_super) {
-
     __extends(ParamsPusher, _super);
 
     function ParamsPusher() {
-      return ParamsPusher.__super__.constructor.apply(this, arguments);
+      _ref = ParamsPusher.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     ParamsPusher.prototype.redirect = function() {
@@ -4337,7 +4317,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.NamedRouteQuery = (function(_super) {
-
     __extends(NamedRouteQuery, _super);
 
     NamedRouteQuery.prototype.isNamedRouteQuery = true;
@@ -4479,7 +4458,7 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.Dispatcher = (function(_super) {
-    var ControllerDirectory;
+    var ControllerDirectory, _ref;
 
     __extends(Dispatcher, _super);
 
@@ -4519,11 +4498,11 @@
     };
 
     ControllerDirectory = (function(_super1) {
-
       __extends(ControllerDirectory, _super1);
 
       function ControllerDirectory() {
-        return ControllerDirectory.__super__.constructor.apply(this, arguments);
+        _ref = ControllerDirectory.__super__.constructor.apply(this, arguments);
+        return _ref;
       }
 
       ControllerDirectory.accessor('__app', Batman.Property.defaultAccessor);
@@ -4555,20 +4534,20 @@
     };
 
     Dispatcher.prototype.pathFromParams = function(params) {
-      var _ref;
+      var _ref1;
       if (typeof params === 'string') {
         return params;
       }
       params = this.constructor.paramsFromArgument(params);
-      return (_ref = this.routeForParams(params)) != null ? _ref.pathFromParams(params) : void 0;
+      return (_ref1 = this.routeForParams(params)) != null ? _ref1.pathFromParams(params) : void 0;
     };
 
     Dispatcher.prototype.dispatch = function(params, paramsMixin) {
-      var error, inferredParams, path, route, _ref, _ref1;
+      var error, inferredParams, path, route, _ref1, _ref2;
       inferredParams = this.constructor.paramsFromArgument(params);
       route = this.routeForParams(inferredParams);
       if (route) {
-        _ref = route.pathAndParamsFromArgument(inferredParams), path = _ref[0], params = _ref[1];
+        _ref1 = route.pathAndParamsFromArgument(inferredParams), path = _ref1[0], params = _ref1[1];
         if (paramsMixin) {
           Batman.mixin(params, paramsMixin);
         }
@@ -4589,8 +4568,8 @@
             return this.isPrevented = true;
           }
         };
-        if ((_ref1 = Batman.currentApp) != null) {
-          _ref1.fire('error', error);
+        if ((_ref2 = Batman.currentApp) != null) {
+          _ref2.fire('error', error);
         }
         if (error.isPrevented) {
           return params;
@@ -4613,7 +4592,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.Route = (function(_super) {
-
     __extends(Route, _super);
 
     Route.regexps = {
@@ -4773,14 +4751,12 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.ControllerActionRoute = (function(_super) {
-
     __extends(ControllerActionRoute, _super);
 
     ControllerActionRoute.prototype.optionKeys = ['member', 'collection', 'app', 'controller', 'action'];
 
     function ControllerActionRoute(templatePath, options) {
       this.callback = __bind(this.callback, this);
-
       var action, controller, _ref;
       if (options.signature) {
         _ref = options.signature.split('#'), controller = _ref[0], action = _ref[1];
@@ -4805,15 +4781,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.CallbackActionRoute = (function(_super) {
-
     __extends(CallbackActionRoute, _super);
 
     function CallbackActionRoute() {
-      return CallbackActionRoute.__super__.constructor.apply(this, arguments);
+      _ref = CallbackActionRoute.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     CallbackActionRoute.prototype.optionKeys = ['member', 'collection', 'callback', 'app'];
@@ -4839,7 +4816,6 @@
     __extends(Hash, _super);
 
     Hash.Metadata = (function(_super1) {
-
       __extends(Metadata, _super1);
 
       Batman.extend(Metadata.prototype, Batman.Enumerable);
@@ -5037,7 +5013,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.RenderCache = (function(_super) {
-
     __extends(RenderCache, _super);
 
     RenderCache.prototype.maximumLength = 4;
@@ -5159,7 +5134,6 @@
     __slice = [].slice;
 
   Batman.Controller = (function(_super) {
-
     __extends(Controller, _super);
 
     Controller.singleton('sharedController');
@@ -5282,9 +5256,7 @@
 
     function Controller() {
       this.redirect = __bind(this.redirect, this);
-
       this.handleError = __bind(this.handleError, this);
-
       this.errorHandler = __bind(this.errorHandler, this);
       Controller.__super__.constructor.apply(this, arguments);
       this._resetActionFrames();
@@ -5608,15 +5580,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.ErrorsSet = (function(_super) {
-
     __extends(ErrorsSet, _super);
 
     function ErrorsSet() {
-      return ErrorsSet.__super__.constructor.apply(this, arguments);
+      _ref = ErrorsSet.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     ErrorsSet.accessor(function(key) {
@@ -5732,14 +5705,12 @@
     __slice = [].slice;
 
   Batman.BinarySetOperation = (function(_super) {
-
     __extends(BinarySetOperation, _super);
 
     function BinarySetOperation(left, right) {
       this.left = left;
       this.right = right;
       this._setup = __bind(this._setup, this);
-
       BinarySetOperation.__super__.constructor.call(this);
       this._setup(this.left, this.right);
       this._setup(this.right, this.left);
@@ -5779,16 +5750,17 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
   Batman.SetUnion = (function(_super) {
-
     __extends(SetUnion, _super);
 
     function SetUnion() {
-      return SetUnion.__super__.constructor.apply(this, arguments);
+      _ref = SetUnion.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     SetUnion.prototype._itemsWereAddedToSource = function() {
@@ -5821,16 +5793,17 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
   Batman.SetIntersection = (function(_super) {
-
     __extends(SetIntersection, _super);
 
     function SetIntersection() {
-      return SetIntersection.__super__.constructor.apply(this, arguments);
+      _ref = SetIntersection.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     SetIntersection.prototype._itemsWereAddedToSource = function() {
@@ -5865,16 +5838,17 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
   Batman.SetComplement = (function(_super) {
-
     __extends(SetComplement, _super);
 
     function SetComplement() {
-      return SetComplement.__super__.constructor.apply(this, arguments);
+      _ref = SetComplement.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     SetComplement.prototype._itemsWereAddedToSource = function() {
@@ -5966,7 +5940,6 @@
     __slice = [].slice;
 
   Batman.StateMachine = (function(_super) {
-
     __extends(StateMachine, _super);
 
     StateMachine.InvalidTransitionError = function(message) {
@@ -6138,7 +6111,6 @@
   })(Batman.Object);
 
   Batman.DelegatingStateMachine = (function(_super) {
-
     __extends(DelegatingStateMachine, _super);
 
     function DelegatingStateMachine(startState, base) {
@@ -6165,7 +6137,7 @@
     __slice = [].slice;
 
   Batman.Model = (function(_super) {
-    var functionName, _i, _j, _len, _len1, _ref, _ref1;
+    var functionName, _i, _j, _len, _len1, _ref, _ref1, _ref2;
 
     __extends(Model, _super);
 
@@ -6457,7 +6429,7 @@
       newRecords = [];
       for (index = _i = 0, _len = records.length; _i < _len; index = ++_i) {
         record = records[index];
-        if (!((id = record.get('id')) != null)) {
+        if ((id = record.get('id')) == null) {
           continue;
         } else if (existing = this._loadIdentity(id)) {
           lifecycle = existing.get('lifecycle');
@@ -6495,11 +6467,11 @@
     }
 
     Model.InstanceLifecycleStateMachine = (function(_super1) {
-
       __extends(InstanceLifecycleStateMachine, _super1);
 
       function InstanceLifecycleStateMachine() {
-        return InstanceLifecycleStateMachine.__super__.constructor.apply(this, arguments);
+        _ref1 = InstanceLifecycleStateMachine.__super__.constructor.apply(this, arguments);
+        return _ref1;
       }
 
       InstanceLifecycleStateMachine.transitions({
@@ -6711,9 +6683,9 @@
     };
 
     Model.prototype.load = function(options, callback) {
-      var _ref1;
+      var _ref2;
       if (!callback) {
-        _ref1 = [{}, options], options = _ref1[0], callback = _ref1[1];
+        _ref2 = [{}, options], options = _ref2[0], callback = _ref2[1];
       } else {
         options = {
           data: options
@@ -6723,10 +6695,10 @@
     };
 
     Model.prototype.loadWithOptions = function(options, callback) {
-      var callbackQueue, hasOptions, _ref1,
+      var callbackQueue, hasOptions, _ref2,
         _this = this;
       hasOptions = Object.keys(options).length !== 0;
-      if ((_ref1 = this.get('lifecycle.state')) === 'destroying' || _ref1 === 'destroyed') {
+      if ((_ref2 = this.get('lifecycle.state')) === 'destroying' || _ref2 === 'destroyed') {
         if (typeof callback === "function") {
           callback(new Error("Can't load a destroyed record!"));
         }
@@ -6769,13 +6741,13 @@
     };
 
     Model.prototype.save = function(options, callback) {
-      var endState, isNew, startState, storageOperation, _ref1, _ref2,
+      var endState, isNew, startState, storageOperation, _ref2, _ref3,
         _this = this;
       if (!callback) {
-        _ref1 = [{}, options], options = _ref1[0], callback = _ref1[1];
+        _ref2 = [{}, options], options = _ref2[0], callback = _ref2[1];
       }
       isNew = this.isNew();
-      _ref2 = isNew ? ['create', 'create', 'created'] : ['save', 'update', 'saved'], startState = _ref2[0], storageOperation = _ref2[1], endState = _ref2[2];
+      _ref3 = isNew ? ['create', 'create', 'created'] : ['save', 'update', 'saved'], startState = _ref3[0], storageOperation = _ref3[1], endState = _ref3[2];
       if (this.get('lifecycle').startTransition(startState)) {
         return this.validate(function(error, errors) {
           var associations;
@@ -6785,9 +6757,9 @@
           }
           associations = _this.constructor._batman.get('associations');
           _this._withoutDirtyTracking(function() {
-            var _ref3,
+            var _ref4,
               _this = this;
-            return associations != null ? (_ref3 = associations.getByType('belongsTo')) != null ? _ref3.forEach(function(association, label) {
+            return associations != null ? (_ref4 = associations.getByType('belongsTo')) != null ? _ref4.forEach(function(association, label) {
               return association.apply(_this);
             }) : void 0 : void 0;
           });
@@ -6799,13 +6771,13 @@
               _this.get('_dirtiedKeys').clear();
               if (associations) {
                 record._withoutDirtyTracking(function() {
-                  var _ref3, _ref4;
-                  if ((_ref3 = associations.getByType('hasOne')) != null) {
-                    _ref3.forEach(function(association, label) {
+                  var _ref4, _ref5;
+                  if ((_ref4 = associations.getByType('hasOne')) != null) {
+                    _ref4.forEach(function(association, label) {
                       return association.apply(err, record);
                     });
                   }
-                  return (_ref4 = associations.getByType('hasMany')) != null ? _ref4.forEach(function(association, label) {
+                  return (_ref5 = associations.getByType('hasMany')) != null ? _ref5.forEach(function(association, label) {
                     return association.apply(err, record);
                   }) : void 0;
                 });
@@ -6828,10 +6800,10 @@
     };
 
     Model.prototype.destroy = function(options, callback) {
-      var _ref1,
+      var _ref2,
         _this = this;
       if (!callback) {
-        _ref1 = [{}, options], options = _ref1[0], callback = _ref1[1];
+        _ref2 = [{}, options], options = _ref2[0], callback = _ref2[1];
       }
       if (this.get('lifecycle').destroy()) {
         return this._doStorageOperation('destroy', {
@@ -6851,7 +6823,7 @@
     };
 
     Model.prototype.validate = function(callback) {
-      var args, count, errors, finishedValidation, key, validator, validators, _j, _k, _len1, _len2, _ref1;
+      var args, count, e, errors, finishedValidation, key, validator, validators, _j, _k, _len1, _len2, _ref2;
       errors = this.get('errors');
       errors.clear();
       validators = this._batman.get('validators') || [];
@@ -6871,9 +6843,9 @@
       };
       for (_j = 0, _len1 = validators.length; _j < _len1; _j++) {
         validator = validators[_j];
-        _ref1 = validator.keys;
-        for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
-          key = _ref1[_k];
+        _ref2 = validator.keys;
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          key = _ref2[_k];
           args = [errors, this, key, finishedValidation];
           try {
             if (validator.validator) {
@@ -6881,7 +6853,8 @@
             } else {
               validator.callback.apply(validator, args);
             }
-          } catch (e) {
+          } catch (_error) {
+            e = _error;
             if (typeof callback === "function") {
               callback(e, errors);
             }
@@ -6934,9 +6907,9 @@
       return result;
     };
 
-    _ref1 = ['load', 'save', 'validate', 'destroy'];
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      functionName = _ref1[_j];
+    _ref2 = ['load', 'save', 'validate', 'destroy'];
+    for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+      functionName = _ref2[_j];
       Model.prototype[functionName] = Batman.Property.wrapTrackingPrevention(Model.prototype[functionName]);
     }
 
@@ -6971,7 +6944,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.Proxy = (function(_super) {
-
     __extends(Proxy, _super);
 
     Proxy.prototype.isProxy = true;
@@ -7011,7 +6983,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.AssociationProxy = (function(_super) {
-
     __extends(AssociationProxy, _super);
 
     AssociationProxy.prototype.loaded = false;
@@ -7093,15 +7064,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.HasOneProxy = (function(_super) {
-
     __extends(HasOneProxy, _super);
 
     function HasOneProxy() {
-      return HasOneProxy.__super__.constructor.apply(this, arguments);
+      _ref = HasOneProxy.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     HasOneProxy.accessor('primaryValue', function() {
@@ -7142,15 +7114,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.BelongsToProxy = (function(_super) {
-
     __extends(BelongsToProxy, _super);
 
     function BelongsToProxy() {
-      return BelongsToProxy.__super__.constructor.apply(this, arguments);
+      _ref = BelongsToProxy.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     BelongsToProxy.accessor('foreignValue', function() {
@@ -7183,15 +7156,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.PolymorphicBelongsToProxy = (function(_super) {
-
     __extends(PolymorphicBelongsToProxy, _super);
 
     function PolymorphicBelongsToProxy() {
-      return PolymorphicBelongsToProxy.__super__.constructor.apply(this, arguments);
+      _ref = PolymorphicBelongsToProxy.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     PolymorphicBelongsToProxy.accessor('foreignTypeValue', function() {
@@ -7224,11 +7198,11 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.Accessible = (function(_super) {
-
     __extends(Accessible, _super);
 
     function Accessible() {
@@ -7240,11 +7214,11 @@
   })(Batman.Object);
 
   Batman.TerminalAccessible = (function(_super) {
-
     __extends(TerminalAccessible, _super);
 
     function TerminalAccessible() {
-      return TerminalAccessible.__super__.constructor.apply(this, arguments);
+      _ref = TerminalAccessible.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     TerminalAccessible.prototype.propertyClass = Batman.Property;
@@ -7256,10 +7230,9 @@
 }).call(this);
 
 (function() {
-
   Batman.URI = (function() {
     /*
-      # URI parsing
+    # URI parsing
     */
 
     var attributes, childKeyMatchers, decodeQueryComponent, encodeComponent, encodeQueryComponent, keyVal, nameParser, normalizeParams, plus, queryFromParams, r20, strictParser;
@@ -7323,7 +7296,7 @@
     };
 
     /*
-      # query parsing
+    # query parsing
     */
 
 
@@ -7357,7 +7330,7 @@
     keyVal = /^([^=]*)=(.*)/;
 
     normalizeParams = function(params, name, v) {
-      var after, childKey, k, last, matches, _ref, _ref1, _ref2;
+      var after, childKey, k, last, matches;
       if (matches = name.match(nameParser)) {
         k = matches[1];
         after = matches[2];
@@ -7367,7 +7340,7 @@
       if (after === '') {
         params[k] = v;
       } else if (after === '[]') {
-        if ((_ref = params[k]) == null) {
+        if (params[k] == null) {
           params[k] = [];
         }
         if (Batman.typeOf(params[k]) !== 'Array') {
@@ -7376,7 +7349,7 @@
         params[k].push(v);
       } else if (matches = after.match(childKeyMatchers[0]) || after.match(childKeyMatchers[1])) {
         childKey = matches[1];
-        if ((_ref1 = params[k]) == null) {
+        if (params[k] == null) {
           params[k] = [];
         }
         if (Batman.typeOf(params[k]) !== 'Array') {
@@ -7389,7 +7362,7 @@
           params[k].push(normalizeParams({}, childKey, v));
         }
       } else {
-        if ((_ref2 = params[k]) == null) {
+        if (params[k] == null) {
           params[k] = {};
         }
         if (Batman.typeOf(params[k]) !== 'Object') {
@@ -7401,7 +7374,7 @@
     };
 
     /*
-      # query building
+    # query building
     */
 
 
@@ -7607,7 +7580,6 @@
     __slice = [].slice;
 
   Batman.SetObserver = (function(_super) {
-
     __extends(SetObserver, _super);
 
     function SetObserver(base) {
@@ -7708,7 +7680,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.SetSort = (function(_super) {
-
     __extends(SetSort, _super);
 
     function SetSort(base, key, order) {
@@ -7718,7 +7689,6 @@
         order = "asc";
       }
       this.compareElements = __bind(this.compareElements, this);
-
       SetSort.__super__.constructor.call(this, base);
       this.descending = order.toLowerCase() === "desc";
       this.isSorted = true;
@@ -7801,13 +7771,19 @@
     };
 
     SetSort.prototype.toArray = function() {
-      this.base.registerAsMutableSource();
-      return this.get('_storage').slice();
+      var _base;
+      if (typeof (_base = this.base).registerAsMutableSource === "function") {
+        _base.registerAsMutableSource();
+      }
+      return this._storage.slice();
     };
 
     SetSort.prototype.forEach = function(iterator, ctx) {
-      var e, i, _i, _len, _ref;
-      _ref = this.get('_storage');
+      var e, i, _base, _i, _len, _ref;
+      if (typeof (_base = this.base).registerAsMutableSource === "function") {
+        _base.registerAsMutableSource();
+      }
+      _ref = this._storage;
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         e = _ref[i];
         iterator.call(ctx, e, i, this);
@@ -7978,7 +7954,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.AssociationSet = (function(_super) {
-
     __extends(AssociationSet, _super);
 
     function AssociationSet(foreignKeyValue, association) {
@@ -8035,7 +8010,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.PolymorphicAssociationSet = (function(_super) {
-
     __extends(PolymorphicAssociationSet, _super);
 
     function PolymorphicAssociationSet(foreignKeyValue, foreignTypeKeyValue, association) {
@@ -8070,7 +8044,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.SetIndex = (function(_super) {
-
     __extends(SetIndex, _super);
 
     SetIndex.accessor('toArray', function() {
@@ -8223,7 +8196,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.PolymorphicAssociationSetIndex = (function(_super) {
-
     __extends(PolymorphicAssociationSetIndex, _super);
 
     function PolymorphicAssociationSetIndex(association, type, key) {
@@ -8279,7 +8251,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.AssociationSetIndex = (function(_super) {
-
     __extends(AssociationSetIndex, _super);
 
     function AssociationSetIndex(association, key) {
@@ -8322,7 +8293,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.UniqueSetIndex = (function(_super) {
-
     __extends(UniqueSetIndex, _super);
 
     function UniqueSetIndex() {
@@ -8362,7 +8332,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.UniqueAssociationSetIndex = (function(_super) {
-
     __extends(UniqueAssociationSetIndex, _super);
 
     function UniqueAssociationSetIndex(association, key) {
@@ -8381,7 +8350,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.PolymorphicUniqueAssociationSetIndex = (function(_super) {
-
     __extends(PolymorphicUniqueAssociationSetIndex, _super);
 
     function PolymorphicUniqueAssociationSetIndex(association, type, key) {
@@ -8401,7 +8369,6 @@
     __slice = [].slice;
 
   Batman.Navigator = (function() {
-
     Navigator.forApp = function(app) {
       return new (this.defaultClass())(app);
     };
@@ -8417,7 +8384,6 @@
     function Navigator(app) {
       this.app = app;
       this.handleCurrentLocation = __bind(this.handleCurrentLocation, this);
-
     }
 
     Navigator.prototype.start = function() {
@@ -8535,20 +8501,21 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.PushStateNavigator = (function(_super) {
-
     __extends(PushStateNavigator, _super);
 
     function PushStateNavigator() {
-      return PushStateNavigator.__super__.constructor.apply(this, arguments);
+      _ref = PushStateNavigator.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     PushStateNavigator.isSupported = function() {
-      var _ref;
-      return (typeof window !== "undefined" && window !== null ? (_ref = window.history) != null ? _ref.pushState : void 0 : void 0) != null;
+      var _ref1;
+      return (typeof window !== "undefined" && window !== null ? (_ref1 = window.history) != null ? _ref1.pushState : void 0 : void 0) != null;
     };
 
     PushStateNavigator.prototype.startWatching = function() {
@@ -8600,19 +8567,19 @@
 }).call(this);
 
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.HashbangNavigator = (function(_super) {
-
     __extends(HashbangNavigator, _super);
 
     function HashbangNavigator() {
       this.detectHashChange = __bind(this.detectHashChange, this);
-
       this.handleHashChange = __bind(this.handleHashChange, this);
-      return HashbangNavigator.__super__.constructor.apply(this, arguments);
+      _ref = HashbangNavigator.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     HashbangNavigator.prototype.hashPrefix = '#!';
@@ -8706,9 +8673,7 @@
 }).call(this);
 
 (function() {
-
   Batman.RouteMap = (function() {
-
     RouteMap.prototype.memberRoute = null;
 
     RouteMap.prototype.collectionRoute = null;
@@ -8785,7 +8750,6 @@
   var __slice = [].slice;
 
   Batman.RouteMapBuilder = (function() {
-
     RouteMapBuilder.BUILDER_FUNCTIONS = ['resources', 'member', 'collection', 'route', 'root'];
 
     RouteMapBuilder.ROUTES = {
@@ -9060,17 +9024,19 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.App = (function(_super) {
-    var name, _fn, _i, _len, _ref,
+    var name, _fn, _i, _len, _ref1,
       _this = this;
 
     __extends(App, _super);
 
     function App() {
-      return App.__super__.constructor.apply(this, arguments);
+      _ref = App.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     App.classAccessor('currentParams', {
@@ -9128,15 +9094,15 @@
 
     App.shouldAllowEvent = {};
 
-    _ref = Batman.RouteMapBuilder.BUILDER_FUNCTIONS;
+    _ref1 = Batman.RouteMapBuilder.BUILDER_FUNCTIONS;
     _fn = function(name) {
       return App[name] = function() {
-        var _ref1;
-        return (_ref1 = this.get('routeMapBuilder'))[name].apply(_ref1, arguments);
+        var _ref2;
+        return (_ref2 = this.get('routeMapBuilder'))[name].apply(_ref2, arguments);
       };
     };
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      name = _ref[_i];
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      name = _ref1[_i];
       _fn(name);
     }
 
@@ -9145,7 +9111,7 @@
     App.event('run').oneShot = true;
 
     App.run = function() {
-      var LayoutView, layout, layoutClass,
+      var LayoutView, layout, layoutClass, _ref2,
         _this = this;
       if (Batman.currentApp) {
         if (Batman.currentApp === this) {
@@ -9190,11 +9156,11 @@
       } else {
         if (layout !== null) {
           layoutClass = (LayoutView = (function(_super1) {
-
             __extends(LayoutView, _super1);
 
             function LayoutView() {
-              return LayoutView.__super__.constructor.apply(this, arguments);
+              _ref2 = LayoutView.__super__.constructor.apply(this, arguments);
+              return _ref2;
             }
 
             return LayoutView;
@@ -9224,9 +9190,9 @@
     App.event('stop').oneShot = true;
 
     App.stop = function() {
-      var _ref1;
-      if ((_ref1 = this.navigator) != null) {
-        _ref1.stop();
+      var _ref2;
+      if ((_ref2 = this.navigator) != null) {
+        _ref2.stop();
       }
       Batman.navigator = null;
       this.hasRun = false;
@@ -9241,9 +9207,7 @@
 }).call(this);
 
 (function() {
-
   Batman.Association = (function() {
-
     Association.prototype.associationType = '';
 
     Association.prototype.isPolymorphic = false;
@@ -9267,7 +9231,7 @@
       };
       this.options = Batman.extend(defaultOptions, this.defaultOptions, options);
       if (this.options.nestUrl) {
-        if (!(this.model.urlNestsUnder != null)) {
+        if (this.model.urlNestsUnder == null) {
           Batman.developer.error("You must persist the the model " + this.model.constructor.name + " to use the url helpers on an association");
         }
         this.model.urlNestsUnder(Batman.helpers.underscore(this.getRelatedModel().get('resourceName')));
@@ -9346,7 +9310,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.PluralAssociation = (function(_super) {
-
     __extends(PluralAssociation, _super);
 
     PluralAssociation.prototype.proxyClass = Batman.AssociationSet;
@@ -9470,7 +9433,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.HasManyAssociation = (function(_super) {
-
     __extends(HasManyAssociation, _super);
 
     HasManyAssociation.prototype.associationType = 'hasMany';
@@ -9586,7 +9548,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.PolymorphicHasManyAssociation = (function(_super) {
-
     __extends(PolymorphicHasManyAssociation, _super);
 
     PolymorphicHasManyAssociation.prototype.proxyClass = Batman.PolymorphicAssociationSet;
@@ -9718,21 +9679,22 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.SingularAssociation = (function(_super) {
-
     __extends(SingularAssociation, _super);
 
     function SingularAssociation() {
-      return SingularAssociation.__super__.constructor.apply(this, arguments);
+      _ref = SingularAssociation.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     SingularAssociation.prototype.isSingular = true;
 
     SingularAssociation.prototype.getAccessor = function(association, model, label) {
-      var proxy, record, recordInAttributes, _ref,
+      var proxy, record, recordInAttributes,
         _this = this;
       if (recordInAttributes = association.getFromAttributes(this)) {
         return recordInAttributes;
@@ -9740,7 +9702,7 @@
       if (association.getRelatedModel()) {
         proxy = this.associationProxy(association);
         record = false;
-        if ((_ref = proxy._loadSetter) == null) {
+        if (proxy._loadSetter == null) {
           proxy._loadSetter = proxy.once('loaded', function(child) {
             return _this._withoutDirtyTracking(function() {
               return this.set(association.label, child);
@@ -9777,7 +9739,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.HasOneAssociation = (function(_super) {
-
     __extends(HasOneAssociation, _super);
 
     HasOneAssociation.prototype.associationType = 'hasOne';
@@ -9844,7 +9805,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.BelongsToAssociation = (function(_super) {
-
     __extends(BelongsToAssociation, _super);
 
     BelongsToAssociation.prototype.associationType = 'belongsTo';
@@ -9924,7 +9884,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.PolymorphicBelongsToAssociation = (function(_super) {
-
     __extends(PolymorphicBelongsToAssociation, _super);
 
     PolymorphicBelongsToAssociation.prototype.isPolymorphic = true;
@@ -10060,7 +10019,6 @@
     __slice = [].slice;
 
   Batman.Validator = (function(_super) {
-
     __extends(Validator, _super);
 
     Validator.triggers = function() {
@@ -10130,7 +10088,6 @@
 }).call(this);
 
 (function() {
-
   Batman.Validators = [];
 
   Batman.extend(Batman.translate.messages, {
@@ -10165,7 +10122,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.RegExpValidator = (function(_super) {
-
     __extends(RegExpValidator, _super);
 
     RegExpValidator.triggers('regexp', 'pattern');
@@ -10184,7 +10140,7 @@
       if (this.handleBlank(value)) {
         return callback();
       }
-      if (!(value != null) || value === '' || !this.regexp.test(value)) {
+      if ((value == null) || value === '' || !this.regexp.test(value)) {
         errors.add(key, this.format(key, 'not_matching'));
       }
       return callback();
@@ -10199,15 +10155,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.PresenceValidator = (function(_super) {
-
     __extends(PresenceValidator, _super);
 
     function PresenceValidator() {
-      return PresenceValidator.__super__.constructor.apply(this, arguments);
+      _ref = PresenceValidator.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     PresenceValidator.triggers('presence');
@@ -10234,15 +10191,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.NumericValidator = (function(_super) {
-
     __extends(NumericValidator, _super);
 
     function NumericValidator() {
-      return NumericValidator.__super__.constructor.apply(this, arguments);
+      _ref = NumericValidator.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     NumericValidator.triggers('numeric', 'greaterThan', 'greaterThanOrEqualTo', 'equalTo', 'lessThan', 'lessThanOrEqualTo');
@@ -10256,7 +10214,7 @@
       if (this.handleBlank(value)) {
         return callback();
       }
-      if (!(value != null) || !(this.isNumeric(value) || this.canCoerceToNumeric(value))) {
+      if ((value == null) || !(this.isNumeric(value) || this.canCoerceToNumeric(value))) {
         errors.add(key, this.format(key, 'not_numeric'));
       } else {
         if ((options.greaterThan != null) && value <= options.greaterThan) {
@@ -10309,7 +10267,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.LengthValidator = (function(_super) {
-
     __extends(LengthValidator, _super);
 
     LengthValidator.triggers('minLength', 'maxLength', 'length', 'lengthWithin', 'lengthIn');
@@ -10368,7 +10325,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.InclusionValidator = (function(_super) {
-
     __extends(InclusionValidator, _super);
 
     InclusionValidator.triggers('inclusion');
@@ -10398,7 +10354,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.ExclusionValidator = (function(_super) {
-
     __extends(ExclusionValidator, _super);
 
     ExclusionValidator.triggers('exclusion');
@@ -10424,15 +10379,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.AssociatedValidator = (function(_super) {
-
     __extends(AssociatedValidator, _super);
 
     function AssociatedValidator() {
-      return AssociatedValidator.__super__.constructor.apply(this, arguments);
+      _ref = AssociatedValidator.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     AssociatedValidator.triggers('associated');
@@ -10482,7 +10438,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.ControllerActionFrame = (function(_super) {
-
     __extends(ControllerActionFrame, _super);
 
     ControllerActionFrame.prototype.operationOccurred = false;
@@ -10540,7 +10495,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.HTMLStore = (function(_super) {
-
     __extends(HTMLStore, _super);
 
     function HTMLStore() {
@@ -10620,13 +10574,12 @@
 }).call(this);
 
 (function() {
-  var _base, _base1, _ref, _ref1,
+  var _base, _base1,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
   Batman.View = (function(_super) {
-
     __extends(View, _super);
 
     View.store = new Batman.HTMLStore;
@@ -10643,7 +10596,7 @@
 
     View.viewForNode = function(node, climbTree) {
       var view;
-      if (!(climbTree != null)) {
+      if (climbTree == null) {
         climbTree = true;
       }
       while (node) {
@@ -10864,7 +10817,7 @@
     View.accessor('node', {
       get: function() {
         var node;
-        if (!(this.node != null) && !this.isDead) {
+        if ((this.node == null) && !this.isDead) {
           node = this.loadView();
           if (node) {
             this.set('node', node);
@@ -11040,7 +10993,7 @@
 
   })(Batman.Object);
 
-  if ((_ref = (_base = Batman.container).$context) == null) {
+  if ((_base = Batman.container).$context == null) {
     _base.$context = function(node) {
       var view;
       while (node) {
@@ -11052,7 +11005,7 @@
     };
   }
 
-  if ((_ref1 = (_base1 = Batman.container).$subviews) == null) {
+  if ((_base1 = Batman.container).$subviews == null) {
     _base1.$subviews = function(view) {
       var subviews;
       if (view == null) {
@@ -11060,10 +11013,10 @@
       }
       subviews = [];
       view.subviews.forEach(function(subview) {
-        var obj, _ref2;
+        var obj, _ref;
         obj = Batman.mixin({}, subview);
         obj.constructor = subview.constructor;
-        obj.subviews = ((_ref2 = subview.subviews) != null ? _ref2.length : void 0) ? $subviews(subview) : null;
+        obj.subviews = ((_ref = subview.subviews) != null ? _ref.length : void 0) ? $subviews(subview) : null;
         Batman.unmixin(obj, {
           '_batman': true
         });
@@ -11076,7 +11029,8 @@
 }).call(this);
 
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -11165,7 +11119,6 @@
 
     function AbstractBinding(definition) {
       this._fireDataChange = __bind(this._fireDataChange, this);
-
       var viewClass;
       this.node = definition.node, this.keyPath = definition.keyPath, this.view = definition.view;
       if (definition.onlyObserve) {
@@ -11242,7 +11195,7 @@
     };
 
     AbstractBinding.prototype.parseFilter = function() {
-      var args, filter, filterName, filterString, filters, key, keyPath, orig, split;
+      var args, e, filter, filterName, filterString, filters, key, keyPath, orig, split;
       this.filterFunctions = [];
       this.filterArguments = [];
       keyPath = this.keyPath;
@@ -11252,7 +11205,8 @@
       filters = keyPath.replace(get_rx, " | get $1 ").replace(/'/g, '"').split(/(?!")\s+\|\s+(?!")/);
       try {
         key = this.parseSegment(orig = filters.shift())[0];
-      } catch (e) {
+      } catch (_error) {
+        e = _error;
         Batman.developer.warn(e);
         Batman.developer.error("Error! Couldn't parse keypath in \"" + orig + "\". Parsing error above.");
       }
@@ -11275,7 +11229,8 @@
           this.filterFunctions.push(filter);
           try {
             this.filterArguments.push(this.parseSegment(args));
-          } catch (e) {
+          } catch (_error) {
+            e = _error;
             Batman.developer.error("Bad filter arguments \"" + args + "\"!");
           }
         }
@@ -11296,7 +11251,6 @@
     };
 
     AbstractBinding.prototype.setupBackingView = function(viewClass, viewOptions) {
-      var _ref, _ref1;
       if (this.backingView) {
         return this.backingView;
       }
@@ -11305,10 +11259,10 @@
       }
       this.superview = this.view;
       viewOptions || (viewOptions = {});
-      if ((_ref = viewOptions.node) == null) {
+      if (viewOptions.node == null) {
         viewOptions.node = this.node;
       }
-      if ((_ref1 = viewOptions.parentNode) == null) {
+      if (viewOptions.parentNode == null) {
         viewOptions.parentNode = this.node;
       }
       viewOptions.isBackingView = true;
@@ -11325,11 +11279,11 @@
   })(Batman.Object);
 
   Batman.BackingView = (function(_super) {
-
     __extends(BackingView, _super);
 
     function BackingView() {
-      return BackingView.__super__.constructor.apply(this, arguments);
+      _ref = BackingView.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     BackingView.prototype.bindImmediately = false;
@@ -11345,7 +11299,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.ViewBinding = (function(_super) {
-
     __extends(ViewBinding, _super);
 
     ViewBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -11413,7 +11366,6 @@
   })(Batman.DOM.AbstractBinding);
 
   Batman.DOM.ViewArgumentBinding = (function(_super) {
-
     __extends(ViewArgumentBinding, _super);
 
     ViewArgumentBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -11454,7 +11406,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.ValueBinding = (function(_super) {
-
     __extends(ValueBinding, _super);
 
     function ValueBinding(definition) {
@@ -11484,7 +11435,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.ShowHideBinding = (function(_super) {
-
     __extends(ShowHideBinding, _super);
 
     ShowHideBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -11525,16 +11475,17 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   Batman.SelectView = (function(_super) {
-
     __extends(SelectView, _super);
 
     function SelectView() {
-      return SelectView.__super__.constructor.apply(this, arguments);
+      _ref = SelectView.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     SelectView.prototype._addChildBinding = function(binding) {
@@ -11547,7 +11498,6 @@
   })(Batman.BackingView);
 
   Batman.DOM.SelectBinding = (function(_super) {
-
     __extends(SelectBinding, _super);
 
     SelectBinding.prototype.backWithView = Batman.SelectView;
@@ -11560,11 +11510,8 @@
 
     function SelectBinding(definition) {
       this.updateOptionBindings = __bind(this.updateOptionBindings, this);
-
       this.nodeChange = __bind(this.nodeChange, this);
-
       this.dataChange = __bind(this.dataChange, this);
-
       this.childBindingAdded = __bind(this.childBindingAdded, this);
       SelectBinding.__super__.constructor.apply(this, arguments);
       this.node.removeAttribute('data-bind');
@@ -11596,7 +11543,7 @@
     SelectBinding.prototype.lastKeyContext = null;
 
     SelectBinding.prototype.dataChange = function(newValue) {
-      var child, matches, valueToChild, _i, _len, _name, _ref,
+      var child, matches, valueToChild, _i, _len, _name, _ref1,
         _this = this;
       this.lastKeyContext || (this.lastKeyContext = this.get('keyContext'));
       if (this.lastKeyContext !== this.get('keyContext')) {
@@ -11605,9 +11552,9 @@
       }
       if (newValue != null ? newValue.forEach : void 0) {
         valueToChild = {};
-        _ref = this.node.children;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          child = _ref[_i];
+        _ref1 = this.node.children;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          child = _ref1[_i];
           child.selected = false;
           matches = valueToChild[_name = child.value] || (valueToChild[_name] = []);
           matches.push(child);
@@ -11622,7 +11569,7 @@
           }
         });
       } else {
-        if (!(newValue != null) && this.canSetImplicitly) {
+        if ((newValue == null) && this.canSetImplicitly) {
           if (this.node.value) {
             this.canSetImplicitly = false;
             this.set('unfilteredValue', this.node.value);
@@ -11649,10 +11596,10 @@
     };
 
     SelectBinding.prototype.updateOptionBindings = function() {
-      var binding, _i, _len, _ref;
-      _ref = this.backingView.bindings;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        binding = _ref[_i];
+      var binding, _i, _len, _ref1;
+      _ref1 = this.backingView.bindings;
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        binding = _ref1[_i];
         if (binding instanceof Batman.DOM.CheckedBinding) {
           binding._fireNodeChange();
         }
@@ -11674,8 +11621,8 @@
     };
 
     SelectBinding.prototype._fixSelectElementWidth = function() {
-      var previousWidth, style, _ref;
-      style = (_ref = this.get('node')) != null ? _ref.style : void 0;
+      var previousWidth, style, _ref1;
+      style = (_ref1 = this.get('node')) != null ? _ref1.style : void 0;
       if (!style) {
         return;
       }
@@ -11691,17 +11638,18 @@
 }).call(this);
 
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.RouteBinding = (function(_super) {
-
     __extends(RouteBinding, _super);
 
     function RouteBinding() {
       this.routeClick = __bind(this.routeClick, this);
-      return RouteBinding.__super__.constructor.apply(this, arguments);
+      _ref = RouteBinding.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     RouteBinding.prototype.onAnchorTag = false;
@@ -11751,12 +11699,12 @@
     };
 
     RouteBinding.prototype.pathFromValue = function(value) {
-      var _ref;
+      var _ref1;
       if (value) {
         if (value.isNamedRouteQuery) {
           return value.get('path');
         } else {
-          return (_ref = this.get('dispatcher')) != null ? _ref.pathFromParams(value) : void 0;
+          return (_ref1 = this.get('dispatcher')) != null ? _ref1.pathFromParams(value) : void 0;
         }
       }
     };
@@ -11768,15 +11716,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.RadioBinding = (function(_super) {
-
     __extends(RadioBinding, _super);
 
     function RadioBinding() {
-      return RadioBinding.__super__.constructor.apply(this, arguments);
+      _ref = RadioBinding.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     RadioBinding.accessor('parsedNodeValue', function() {
@@ -11815,7 +11764,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.FileBinding = (function(_super) {
-
     __extends(FileBinding, _super);
 
     FileBinding.prototype.isInputBinding = true;
@@ -11843,15 +11791,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref, _ref1,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DeferredRenderView = (function(_super) {
-
     __extends(DeferredRenderView, _super);
 
     function DeferredRenderView() {
-      return DeferredRenderView.__super__.constructor.apply(this, arguments);
+      _ref = DeferredRenderView.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     DeferredRenderView.prototype.bindImmediately = false;
@@ -11861,11 +11810,11 @@
   })(Batman.View);
 
   Batman.DOM.DeferredRenderBinding = (function(_super) {
-
     __extends(DeferredRenderBinding, _super);
 
     function DeferredRenderBinding() {
-      return DeferredRenderBinding.__super__.constructor.apply(this, arguments);
+      _ref1 = DeferredRenderBinding.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     DeferredRenderBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -11894,7 +11843,6 @@
   Batman.developer["do"](function() {
     var DebuggerBinding;
     DebuggerBinding = (function(_super) {
-
       __extends(DebuggerBinding, _super);
 
       function DebuggerBinding() {
@@ -11917,7 +11865,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.AbstractAttributeBinding = (function(_super) {
-
     __extends(AbstractAttributeBinding, _super);
 
     function AbstractAttributeBinding(definition) {
@@ -11936,7 +11883,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.EventBinding = (function(_super) {
-
     __extends(EventBinding, _super);
 
     EventBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -11990,7 +11936,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.ContextBinding = (function(_super) {
-
     __extends(ContextBinding, _super);
 
     ContextBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -12027,7 +11972,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.FormBinding = (function(_super) {
-
     __extends(FormBinding, _super);
 
     FormBinding.prototype.bindingName = 'formfor';
@@ -12093,15 +12037,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.NodeAttributeBinding = (function(_super) {
-
     __extends(NodeAttributeBinding, _super);
 
     function NodeAttributeBinding() {
-      return NodeAttributeBinding.__super__.constructor.apply(this, arguments);
+      _ref = NodeAttributeBinding.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     NodeAttributeBinding.prototype.dataChange = function(value) {
@@ -12124,15 +12069,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.CheckedBinding = (function(_super) {
-
     __extends(CheckedBinding, _super);
 
     function CheckedBinding() {
-      return CheckedBinding.__super__.constructor.apply(this, arguments);
+      _ref = CheckedBinding.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     CheckedBinding.prototype.isInputBinding = true;
@@ -12148,15 +12094,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.AttributeBinding = (function(_super) {
-
     __extends(AttributeBinding, _super);
 
     function AttributeBinding() {
-      return AttributeBinding.__super__.constructor.apply(this, arguments);
+      _ref = AttributeBinding.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     AttributeBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -12185,7 +12132,6 @@
   redundantWhitespaceRegex = /[ \t]{2,}/g;
 
   Batman.DOM.AddClassBinding = (function(_super) {
-
     __extends(AddClassBinding, _super);
 
     AddClassBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -12237,19 +12183,20 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.AbstractCollectionBinding = (function(_super) {
-
     __extends(AbstractCollectionBinding, _super);
 
     function AbstractCollectionBinding() {
-      return AbstractCollectionBinding.__super__.constructor.apply(this, arguments);
+      _ref = AbstractCollectionBinding.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     AbstractCollectionBinding.prototype.bindCollection = function(newCollection) {
-      var _ref;
+      var _ref1;
       if (newCollection instanceof Batman.Hash) {
         newCollection = newCollection.meta;
       }
@@ -12258,7 +12205,7 @@
       } else {
         this.unbindCollection();
         this.collection = newCollection;
-        if (!((_ref = this.collection) != null ? _ref.isObservable : void 0)) {
+        if (!((_ref1 = this.collection) != null ? _ref1.isObservable : void 0)) {
           return false;
         }
         if (this.collection.isCollectionEventEmitter && this.handleItemsAdded && this.handleItemsRemoved && this.handleItemMoved) {
@@ -12274,8 +12221,8 @@
     };
 
     AbstractCollectionBinding.prototype.unbindCollection = function() {
-      var _ref;
-      if (!((_ref = this.collection) != null ? _ref.isObservable : void 0)) {
+      var _ref1;
+      if (!((_ref1 = this.collection) != null ? _ref1.isObservable : void 0)) {
         return;
       }
       if (this.collection.isCollectionEventEmitter && this.handleItemsAdded && this.handleItemsRemoved && this.handleItemMoved) {
@@ -12308,14 +12255,12 @@
     __slice = [].slice;
 
   Batman.DOM.StyleBinding = (function(_super) {
-
     __extends(StyleBinding, _super);
 
     StyleBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
 
     function StyleBinding() {
       this.setStyle = __bind(this.setStyle, this);
-
       this.handleArrayChanged = __bind(this.handleArrayChanged, this);
       this.oldStyles = {};
       this.styleBindings = {};
@@ -12407,7 +12352,6 @@
     };
 
     StyleBinding.SingleStyleBinding = (function(_super1) {
-
       __extends(SingleStyleBinding, _super1);
 
       SingleStyleBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -12436,17 +12380,18 @@
 }).call(this);
 
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.ClassBinding = (function(_super) {
-
     __extends(ClassBinding, _super);
 
     function ClassBinding() {
       this.handleArrayChanged = __bind(this.handleArrayChanged, this);
-      return ClassBinding.__super__.constructor.apply(this, arguments);
+      _ref = ClassBinding.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     ClassBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -12469,12 +12414,12 @@
         array = this.collection.map ? this.collection.map(function(x) {
           return x;
         }) : (function() {
-          var _ref, _results;
-          _ref = this.collection;
+          var _ref1, _results;
+          _ref1 = this.collection;
           _results = [];
-          for (k in _ref) {
-            if (!__hasProp.call(_ref, k)) continue;
-            v = _ref[k];
+          for (k in _ref1) {
+            if (!__hasProp.call(_ref1, k)) continue;
+            v = _ref1[k];
             _results.push(k);
           }
           return _results;
@@ -12501,7 +12446,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.InsertionBinding = (function(_super) {
-
     __extends(InsertionBinding, _super);
 
     InsertionBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -12526,7 +12470,7 @@
         if (view != null) {
           view.fire('viewWillShow');
         }
-        if (!(this.node.parentNode != null)) {
+        if (this.node.parentNode == null) {
           parentNode.insertBefore(this.node, this.placeholderNode);
           parentNode.removeChild(this.placeholderNode);
         }
@@ -12555,15 +12499,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref, _ref1,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.IteratorView = (function(_super) {
-
     __extends(IteratorView, _super);
 
     function IteratorView() {
-      return IteratorView.__super__.constructor.apply(this, arguments);
+      _ref = IteratorView.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     IteratorView.prototype.loadView = function() {
@@ -12601,11 +12546,11 @@
         for (_j = 0, _len1 = items.length; _j < _len1; _j++) {
           item = items[_j];
           _results1.push((function() {
-            var _k, _len2, _ref, _results2;
-            _ref = this.subviews._storage;
+            var _k, _len2, _ref1, _results2;
+            _ref1 = this.subviews._storage;
             _results2 = [];
-            for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
-              subview = _ref[_k];
+            for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+              subview = _ref1[_k];
               if (!(subview.get(this.attributeName) === item)) {
                 continue;
               }
@@ -12653,22 +12598,22 @@
     };
 
     IteratorView.prototype._finishAppendItems = function() {
-      var index, isInDOM, sibling, subview, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _step;
+      var index, isInDOM, sibling, subview, _i, _j, _k, _len, _len1, _ref1, _ref2, _ref3, _ref4;
       isInDOM = document.body.contains(this.node);
       if (isInDOM) {
-        _ref = this.appendedViews;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          subview = _ref[_i];
+        _ref1 = this.appendedViews;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          subview = _ref1[_i];
           subview.propagateToSubviews('viewWillAppear');
         }
       }
-      _ref1 = this.subviews.toArray();
-      for (index = _j = 0, _len1 = _ref1.length, _step = -1; _j < _len1; index = _j += _step) {
-        subview = _ref1[index];
+      _ref2 = this.subviews.toArray();
+      for (index = _j = _ref2.length - 1; _j >= 0; index = _j += -1) {
+        subview = _ref2[index];
         if (!subview._targeted) {
           continue;
         }
-        if (sibling = (_ref2 = this.subviews.at(index + 1)) != null ? _ref2.get('node') : void 0) {
+        if (sibling = (_ref3 = this.subviews.at(index + 1)) != null ? _ref3.get('node') : void 0) {
           sibling.parentNode.insertBefore(subview.get('node'), sibling);
         } else {
           this.fragment.appendChild(subview.get('node'));
@@ -12678,9 +12623,9 @@
       this.node.parentNode.insertBefore(this.fragment, this.node);
       this.fire('itemsWereRendered');
       if (isInDOM) {
-        _ref3 = this.appendedViews;
-        for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
-          subview = _ref3[_k];
+        _ref4 = this.appendedViews;
+        for (_k = 0, _len1 = _ref4.length; _k < _len1; _k++) {
+          subview = _ref4[_k];
           subview.propagateToSubviews('isInDOM', isInDOM);
           subview.propagateToSubviews('viewDidAppear');
         }
@@ -12694,11 +12639,11 @@
   })(Batman.View);
 
   Batman.IterationView = (function(_super) {
-
     __extends(IterationView, _super);
 
     function IterationView() {
-      return IterationView.__super__.constructor.apply(this, arguments);
+      _ref1 = IterationView.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     return IterationView;
@@ -12713,7 +12658,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.IteratorBinding = (function(_super) {
-
     __extends(IteratorBinding, _super);
 
     IteratorBinding.prototype.onlyObserve = Batman.BindingDefinitionOnlyObserve.Data;
@@ -12726,13 +12670,9 @@
 
     function IteratorBinding(definition) {
       this.handleItemMoved = __bind(this.handleItemMoved, this);
-
       this.handleItemsRemoved = __bind(this.handleItemsRemoved, this);
-
       this.handleItemsAdded = __bind(this.handleItemsAdded, this);
-
       this.handleArrayChanged = __bind(this.handleArrayChanged, this);
-
       var _this = this;
       this.iteratorName = definition.attr;
       this.prototypeNode = definition.node;
@@ -12766,6 +12706,7 @@
           this.handleArrayChanged(items);
         }
       } else {
+        this.collection = [];
         this.handleArrayChanged([]);
       }
     };
@@ -12829,11 +12770,12 @@
     uuid: 0,
     expando: "batman" + Math.random().toString().replace(/\D/g, ''),
     canDeleteExpando: (function() {
-      var div;
+      var div, e;
       try {
         div = document.createElement('div');
         return delete div.test;
-      } catch (e) {
+      } catch (_error) {
+        e = _error;
         return Batman.canDeleteExpando = false;
       }
     })(),
@@ -12958,7 +12900,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.DOM.Yield = (function(_super) {
-
     __extends(Yield, _super);
 
     Yield.yields = {};
@@ -13168,7 +13109,7 @@
       for (k in interpolationKeypaths) {
         v = interpolationKeypaths[k];
         values[k] = this.get(v);
-        if (!(values[k] != null)) {
+        if (values[k] == null) {
           Batman.developer.warn("Warning! Undefined interpolation key " + k + " for interpolation", string);
           values[k] = '';
         }
@@ -13212,7 +13153,6 @@
 }).call(this);
 
 (function() {
-
 
 
 }).call(this);

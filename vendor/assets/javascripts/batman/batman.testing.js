@@ -1,5 +1,4 @@
 (function() {
-
   Batman.Request.setupMockedResponse = function() {
     return Batman.Request.mockedResponses = {};
   };
