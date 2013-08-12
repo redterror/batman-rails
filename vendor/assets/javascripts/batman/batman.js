@@ -1163,6 +1163,13 @@
     registerAsMutableSource: function() {
       return Batman.Property.registerSource(this);
     },
+    mutate: function(wrappedFunction) {
+      var result;
+      this.prevent('change');
+      result = wrappedFunction.call(this);
+      this.allowAndFire('change', this, this);
+      return result;
+    },
     mutation: function(wrappedFunction) {
       return function() {
         var result, _ref;
@@ -1181,10 +1188,6 @@
       this.event(key).allow();
       return this;
     },
-    isPrevented: function(key) {
-      var _ref;
-      return (_ref = this.event(key, false)) != null ? _ref.isPrevented() : void 0;
-    },
     fire: function() {
       var args, key, _ref;
       key = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -1194,6 +1197,74 @@
       var args, key, _ref;
       key = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       return (_ref = this.event(key, false)) != null ? _ref.allowAndFireWithContext(this, args) : void 0;
+    },
+    isPrevented: function(key) {
+      var _ref;
+      return (_ref = this.event(key, false)) != null ? _ref.isPrevented() : void 0;
+    }
+  };
+
+}).call(this);
+
+(function() {
+  var fire,
+    __slice = [].slice;
+
+  Batman.LifecycleEvents = {
+    initialize: function() {
+      return this.prototype.fireLifecycleEvent = fire;
+    },
+    lifecycleEvent: function(eventName, normalizeFunction) {
+      var addCallback, afterName, beforeName;
+      beforeName = "before" + (Batman.helpers.camelize(eventName));
+      afterName = "after" + (Batman.helpers.camelize(eventName));
+      addCallback = function(lifecycleEventName) {
+        return function(callbackName, options) {
+          var callback, handlers, target, _base, _ref;
+          if (Batman.typeOf(callbackName) === 'Object') {
+            _ref = [options, callbackName], callbackName = _ref[0], options = _ref[1];
+          }
+          if (Batman.typeOf(callbackName) === 'String') {
+            callback = function() {
+              return this[callbackName].apply(this, arguments);
+            };
+          } else {
+            callback = callbackName;
+          }
+          options = (typeof normalizeFunction === "function" ? normalizeFunction(options) : void 0) || options;
+          target = this.prototype || this;
+          Batman.initializeObject(target);
+          handlers = (_base = target._batman)[lifecycleEventName] || (_base[lifecycleEventName] = []);
+          return handlers.push({
+            options: options,
+            callback: callback
+          });
+        };
+      };
+      this[beforeName] = addCallback(beforeName);
+      this.prototype[beforeName] = addCallback(beforeName);
+      this[afterName] = addCallback(afterName);
+      return this.prototype[afterName] = addCallback(afterName);
+    }
+  };
+
+  fire = function() {
+    var args, callback, handlers, lifecycleEventName, options, _i, _len, _ref;
+    lifecycleEventName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if (!(handlers = this._batman.get(lifecycleEventName))) {
+      return;
+    }
+    for (_i = 0, _len = handlers.length; _i < _len; _i++) {
+      _ref = handlers[_i], options = _ref.options, callback = _ref.callback;
+      if ((options != null ? options["if"] : void 0) && !options["if"].apply(this, args)) {
+        continue;
+      }
+      if ((options != null ? options.unless : void 0) && options.unless.apply(this, args)) {
+        continue;
+      }
+      if (callback.apply(this, args) === false) {
+        return false;
+      }
     }
   };
 
@@ -1712,38 +1783,17 @@
 
     Batman.extend(SimpleSet.prototype, Batman.Enumerable);
 
-    SimpleSet.prototype.has = function(item) {
-      return !!(~this._indexOfItem(item));
+    SimpleSet.prototype.at = function(index) {
+      return this._storage[index];
     };
 
     SimpleSet.prototype.add = function() {
-      var addedItems, items;
+      var addedItems, item, items, _i, _len;
       items = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      addedItems = this._add(items);
-      if (this.fire && addedItems.length !== 0) {
-        this.fire('change', this, this);
-        this.fire('itemsWereAdded', addedItems);
-      }
-      return addedItems;
-    };
-
-    SimpleSet.prototype.remove = function() {
-      var items, removedItems;
-      items = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      removedItems = this._remove(items);
-      if (this.fire && removedItems.length !== 0) {
-        this.fire('change', this, this);
-        this.fire('itemsWereRemoved', removedItems);
-      }
-      return removedItems;
-    };
-
-    SimpleSet.prototype._add = function(items) {
-      var addedItems, item, _i, _len;
       addedItems = [];
       for (_i = 0, _len = items.length; _i < _len; _i++) {
         item = items[_i];
-        if (!(!~this._indexOfItem(item))) {
+        if (!(this._indexOfItem(item) === -1)) {
           continue;
         }
         this._storage.push(item);
@@ -1753,48 +1803,79 @@
       return addedItems;
     };
 
-    SimpleSet.prototype._remove = function(items) {
-      var index, item, removedItems, _i, _len;
+    SimpleSet.prototype.insert = function() {
+      return this.insertWithIndexes.apply(this, arguments).addedItems;
+    };
+
+    SimpleSet.prototype.insertWithIndexes = function(items, indexes) {
+      var addedIndexes, addedItems, i, index, item, _i, _len;
+      addedIndexes = [];
+      addedItems = [];
+      for (i = _i = 0, _len = items.length; _i < _len; i = ++_i) {
+        item = items[i];
+        if (!(this._indexOfItem(item) === -1)) {
+          continue;
+        }
+        index = indexes[i];
+        this._storage.splice(index, 0, item);
+        addedItems.push(item);
+        addedIndexes.push(index);
+      }
+      this.length = this._storage.length;
+      return {
+        addedItems: addedItems,
+        addedIndexes: addedIndexes
+      };
+    };
+
+    SimpleSet.prototype.remove = function() {
+      return this.removeWithIndexes.apply(this, arguments).removedItems;
+    };
+
+    SimpleSet.prototype.removeWithIndexes = function() {
+      var index, item, items, removedIndexes, removedItems, _i, _len;
+      items = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      removedIndexes = [];
       removedItems = [];
       for (_i = 0, _len = items.length; _i < _len; _i++) {
         item = items[_i];
-        if (!(~(index = this._indexOfItem(item)))) {
+        if (!((index = this._indexOfItem(item)) !== -1)) {
           continue;
         }
         this._storage.splice(index, 1);
         removedItems.push(item);
+        removedIndexes.push(index);
       }
       this.length = this._storage.length;
-      return removedItems;
-    };
-
-    SimpleSet.prototype.addAndRemove = function(itemsToAdd, itemsToRemove) {
-      var itemsAdded, itemsRemoved;
-      itemsAdded = this._add(itemsToAdd || []);
-      itemsRemoved = this._remove(itemsToRemove || []);
-      if (this.fire) {
-        if (itemsAdded.length > 0 || itemsRemoved.length > 0) {
-          this.fire('change', this, this);
-        }
-        if (itemsAdded.length > 0) {
-          this.fire('itemsWereAdded', itemsAdded);
-        }
-        if (itemsRemoved.length > 0) {
-          this.fire('itemsWereRemoved', itemsRemoved);
-        }
-      }
       return {
-        added: itemsAdded,
-        removed: itemsRemoved
+        removedItems: removedItems,
+        removedIndexes: removedIndexes
       };
     };
 
-    SimpleSet.prototype.find = function(f) {
+    SimpleSet.prototype.clear = function() {
+      var items;
+      items = this._storage;
+      this._storage = [];
+      this.length = 0;
+      return items;
+    };
+
+    SimpleSet.prototype.replace = function(other) {
+      this.clear();
+      return this.add.apply(this, other.toArray());
+    };
+
+    SimpleSet.prototype.has = function(item) {
+      return this._indexOfItem(item) !== -1;
+    };
+
+    SimpleSet.prototype.find = function(fn) {
       var item, _i, _len, _ref;
       _ref = this._storage;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
-        if (f(item)) {
+        if (fn(item)) {
           return item;
         }
       }
@@ -1811,32 +1892,6 @@
 
     SimpleSet.prototype.isEmpty = function() {
       return this.length === 0;
-    };
-
-    SimpleSet.prototype.clear = function() {
-      var items;
-      items = this._storage;
-      this._storage = [];
-      this.length = 0;
-      if (this.fire && items.length !== 0) {
-        this.fire('change', this, this);
-        this.fire('itemsWereRemoved', items);
-      }
-      return items;
-    };
-
-    SimpleSet.prototype.replace = function(other) {
-      try {
-        if (typeof this.prevent === "function") {
-          this.prevent('change');
-        }
-        this.clear();
-        return this.add.apply(this, other.toArray());
-      } finally {
-        if (typeof this.allowAndFire === "function") {
-          this.allowAndFire('change', this, this);
-        }
-      }
     };
 
     SimpleSet.prototype.toArray = function() {
@@ -3927,11 +3982,10 @@
     }));
 
     RestStorage.prototype.after('get', 'put', 'post', 'delete', RestStorage.skipIfError(function(env, next) {
-      var json, namespace;
+      var namespace;
       if (env.json != null) {
-        json = env.json;
         namespace = env.subject.prototype ? this.collectionJsonNamespace(env.subject) : this.recordJsonNamespace(env.subject);
-        env.result = namespace && (env.json[namespace] != null) ? env.json[namespace] : env.json;
+        env.result = this.extractFromNamespace(env.json, namespace);
       }
       return next();
     }));
@@ -5101,11 +5155,10 @@
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __slice = [].slice,
-    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
+    __slice = [].slice;
 
   Batman.Controller = (function(_super) {
-    var _optionsFromFilterArguments;
 
     __extends(Controller, _super);
 
@@ -5126,45 +5179,43 @@
       };
     });
 
-    _optionsFromFilterArguments = function(options, nameOrFunction) {
-      if (!nameOrFunction) {
-        nameOrFunction = options;
+    Controller.classMixin(Batman.LifecycleEvents);
+
+    Controller.lifecycleEvent('action', function(options) {
+      var except, normalized, only;
+      if (options == null) {
         options = {};
-      } else {
-        if (typeof options === 'string') {
-          options = {
-            only: [options]
-          };
-        } else {
-          if (options.only && Batman.typeOf(options.only) !== 'Array') {
-            options.only = [options.only];
-          }
-          if (options.except && Batman.typeOf(options.except) !== 'Array') {
-            options.except = [options.except];
-          }
-        }
       }
-      options.block = nameOrFunction;
-      return options;
-    };
+      normalized = {};
+      only = Batman.typeOf(options.only) === 'String' ? [options.only] : options.only;
+      except = Batman.typeOf(options.except) === 'String' ? [options.except] : options.except;
+      normalized["if"] = function(params, frame) {
+        var _ref, _ref1;
+        if (this._afterFilterRedirect) {
+          return false;
+        }
+        if (only && (_ref = frame.action, __indexOf.call(only, _ref) < 0)) {
+          return false;
+        }
+        if (except && (_ref1 = frame.action, __indexOf.call(except, _ref1) >= 0)) {
+          return false;
+        }
+        return true;
+      };
+      return normalized;
+    });
 
     Controller.beforeFilter = function() {
-      var filters, options, _base;
-      Batman.initializeObject(this);
-      options = _optionsFromFilterArguments.apply(null, arguments);
-      filters = (_base = this._batman).beforeFilters || (_base.beforeFilters = []);
-      return filters.push(options);
+      Batman.developer.deprecated("Batman.Controller::beforeFilter", "Please use beforeAction instead.");
+      return this.beforeAction.apply(this, arguments);
     };
 
     Controller.afterFilter = function() {
-      var filters, options, _base;
-      Batman.initializeObject(this);
-      options = _optionsFromFilterArguments.apply(null, arguments);
-      filters = (_base = this._batman).afterFilters || (_base.afterFilters = []);
-      return filters.push(options);
+      Batman.developer.deprecated("Batman.Controller::afterFilter", "Please use afterAction instead.");
+      return this.afterAction.apply(this, arguments);
     };
 
-    Controller.afterFilter(function(params) {
+    Controller.afterAction(function(params) {
       if (this.autoScrollToHash && (params['#'] != null)) {
         return this.scrollToHash(params['#']);
       }
@@ -5258,6 +5309,7 @@
       this.set('params', params);
       this.executeAction(action, params);
       redirectTo = this._afterFilterRedirect;
+      this._afterFilterRedirect = null;
       delete this._afterFilterRedirect;
       if (redirectTo) {
         return Batman.redirect(redirectTo);
@@ -5274,11 +5326,12 @@
       parentFrame = this._actionFrames[this._actionFrames.length - 1];
       frame = new Batman.ControllerActionFrame({
         parentFrame: parentFrame,
-        action: action
+        action: action,
+        params: params
       }, function() {
         var _ref;
         if (!_this._afterFilterRedirect) {
-          _this._runFilters(action, params, 'afterFilters');
+          _this.fireLifecycleEvent('afterAction', frame.params, frame);
         }
         _this._resetActionFrames();
         return (_ref = Batman.navigator) != null ? _ref.redirect = oldRedirect : void 0;
@@ -5291,12 +5344,13 @@
       if ((_ref1 = Batman.navigator) != null) {
         _ref1.redirect = this.redirect;
       }
-      this._runFilters(action, params, 'beforeFilters');
-      if (!this._afterFilterRedirect) {
-        result = this[action](params);
-      }
-      if (!frame.operationOccurred) {
-        this.render();
+      if (this.fireLifecycleEvent('beforeAction', frame.params, frame) !== false) {
+        if (!this._afterFilterRedirect) {
+          result = this[action](params);
+        }
+        if (!frame.operationOccurred) {
+          this.render();
+        }
       }
       frame.finishOperation();
       return result;
@@ -5347,6 +5401,9 @@
         view = this.renderCache.viewForOptions(options);
       }
       if (view) {
+        view.once('viewDidAppear', function() {
+          return frame != null ? frame.finishOperation() : void 0;
+        });
         yieldName = options.into || this.defaultRenderYield;
         if (yieldContentView = Batman.DOM.Yield.withName(yieldName).contentView) {
           if (yieldContentView !== view && !yieldContentView.isDead) {
@@ -5365,18 +5422,9 @@
           }
         }
         this.set('currentView', view);
-        view.once('ready', function() {
-          return frame != null ? frame.finishOperation() : void 0;
-        });
       }
       return view;
     };
-
-    Controller.accessor('viewContext', function() {
-      return this.viewContext || (this.viewContext = new Batman.View({
-        controller: this
-      }));
-    });
 
     Controller.prototype.scrollToHash = function(hash) {
       if (hash == null) {
@@ -5395,32 +5443,6 @@
       return ((_ref = Batman.currentApp) != null ? _ref[Batman.helpers.camelize("" + classPrefix + "_" + action + "_view")] : void 0) || Batman.View;
     };
 
-    Controller.prototype._runFilters = function(action, params, filters) {
-      var block, options, _i, _len, _ref;
-      if (filters = (_ref = this.constructor._batman) != null ? _ref.get(filters) : void 0) {
-        for (_i = 0, _len = filters.length; _i < _len; _i++) {
-          options = filters[_i];
-          if (options.only && __indexOf.call(options.only, action) < 0) {
-            continue;
-          }
-          if (options.except && __indexOf.call(options.except, action) >= 0) {
-            continue;
-          }
-          if (this._afterFilterRedirect) {
-            return;
-          }
-          block = options.block;
-          if (typeof block === 'function') {
-            block.call(this, params);
-          } else {
-            if (typeof this[block] === "function") {
-              this[block](params);
-            }
-          }
-        }
-      }
-    };
-
     return Controller;
 
   })(Batman.Object);
@@ -5436,6 +5458,8 @@
       _this = this;
 
     __extends(Set, _super);
+
+    Set.prototype.isCollectionEventEmitter = true;
 
     function Set() {
       Batman.SimpleSet.apply(this, arguments);
@@ -5495,13 +5519,13 @@
 
     Set._applySetAccessors(Set);
 
-    _ref = ['add', '_add', 'remove', '_remove', 'addAndRemove', 'clear', 'replace', 'indexedBy', 'indexedByUnique', 'sortedBy', 'equality', '_indexOfItem'];
+    _ref = ['indexedBy', 'indexedByUnique', 'sortedBy', 'equality', '_indexOfItem'];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       k = _ref[_i];
       Set.prototype[k] = Batman.SimpleSet.prototype[k];
     }
 
-    _ref1 = ['find', 'merge', 'forEach', 'toArray', 'isEmpty', 'has'];
+    _ref1 = ['at', 'find', 'merge', 'forEach', 'toArray', 'isEmpty', 'has'];
     _fn = function(k) {
       return Set.prototype[k] = function() {
         this.registerAsMutableSource();
@@ -5514,6 +5538,68 @@
     }
 
     Set.prototype.toJSON = Set.prototype.toArray;
+
+    Set.prototype.add = Set.mutation(function() {
+      var addedItems;
+      addedItems = Batman.SimpleSet.prototype.add.apply(this, arguments);
+      if (addedItems.length) {
+        this.fire('itemsWereAdded', addedItems);
+      }
+      return addedItems;
+    });
+
+    Set.prototype.insert = function() {
+      return this.insertWithIndexes.apply(this, arguments).addedItems;
+    };
+
+    Set.prototype.insertWithIndexes = Set.mutation(function() {
+      var addedIndexes, addedItems, _ref2;
+      _ref2 = Batman.SimpleSet.prototype.insertWithIndexes.apply(this, arguments), addedItems = _ref2.addedItems, addedIndexes = _ref2.addedIndexes;
+      if (addedItems.length) {
+        this.fire('itemsWereAdded', addedItems, addedIndexes);
+      }
+      return {
+        addedItems: addedItems,
+        addedIndexes: addedIndexes
+      };
+    });
+
+    Set.prototype.remove = function() {
+      return this.removeWithIndexes.apply(this, arguments).removedItems;
+    };
+
+    Set.prototype.removeWithIndexes = Set.mutation(function() {
+      var removedIndexes, removedItems, _ref2;
+      _ref2 = Batman.SimpleSet.prototype.removeWithIndexes.apply(this, arguments), removedItems = _ref2.removedItems, removedIndexes = _ref2.removedIndexes;
+      if (removedItems.length) {
+        this.fire('itemsWereRemoved', removedItems, removedIndexes);
+      }
+      return {
+        removedItems: removedItems,
+        removedIndexes: removedIndexes
+      };
+    });
+
+    Set.prototype.clear = Set.mutation(function() {
+      var removedItems;
+      removedItems = Batman.SimpleSet.prototype.clear.call(this);
+      if (removedItems.length) {
+        this.fire('itemsWereRemoved', removedItems);
+      }
+      return removedItems;
+    });
+
+    Set.prototype.replace = Set.mutation(function(other) {
+      var addedItems, removedItems;
+      removedItems = Batman.SimpleSet.prototype.clear.call(this);
+      addedItems = Batman.SimpleSet.prototype.add.apply(this, other.toArray());
+      if (removedItems.length) {
+        this.fire('itemsWereRemoved', removedItems);
+      }
+      if (addedItems.length) {
+        return this.fire('itemsWereAdded', addedItems);
+      }
+    });
 
     return Set;
 
@@ -5558,26 +5644,39 @@
     __extends(SetProxy, _super);
 
     function SetProxy(base) {
-      var _base, _base1,
-        _this = this;
       this.base = base;
       SetProxy.__super__.constructor.call(this);
       this.length = this.base.length;
-      if (typeof (_base = this.base).on === "function") {
-        _base.on('itemsWereAdded', function(items) {
-          _this.set('length', _this.base.length);
-          return _this.fire('itemsWereAdded', items);
-        });
-      }
-      if (typeof (_base1 = this.base).on === "function") {
-        _base1.on('itemsWereRemoved', function(items) {
-          _this.set('length', _this.base.length);
-          return _this.fire('itemsWereRemoved', items);
-        });
+      if (this.base.isCollectionEventEmitter) {
+        this.isCollectionEventEmitter = true;
+        this._setObserver = new Batman.SetObserver(this.base);
+        this._setObserver.on('itemsWereAdded', this._handleItemsAdded.bind(this));
+        this._setObserver.on('itemsWereRemoved', this._handleItemsRemoved.bind(this));
+        this.startObserving();
       }
     }
 
     Batman.extend(SetProxy.prototype, Batman.Enumerable);
+
+    SetProxy.prototype.startObserving = function() {
+      var _ref;
+      return (_ref = this._setObserver) != null ? _ref.startObserving() : void 0;
+    };
+
+    SetProxy.prototype.stopObserving = function() {
+      var _ref;
+      return (_ref = this._setObserver) != null ? _ref.stopObserving() : void 0;
+    };
+
+    SetProxy.prototype._handleItemsAdded = function(items, indexes) {
+      this.set('length', this.base.length);
+      return this.fire('itemsWereAdded', items, indexes);
+    };
+
+    SetProxy.prototype._handleItemsRemoved = function(items, indexes) {
+      this.set('length', this.base.length);
+      return this.fire('itemsWereRemoved', items, indexes);
+    };
 
     SetProxy.prototype.filter = function(f) {
       return this.reduce(function(accumulator, element) {
@@ -5592,18 +5691,17 @@
       var length, result;
       length = this.property('length');
       length.isolate();
-      result = this.base.replace.apply(this, arguments);
+      result = this.base.replace.apply(this.base, arguments);
       length.expose();
       return result;
     };
 
     Batman.Set._applySetAccessors(SetProxy);
 
-    _ref = ['add', 'remove', 'addAndRemove', 'find', 'clear', 'has', 'merge', 'toArray', 'isEmpty', 'indexedBy', 'indexedByUnique', 'sortedBy'];
+    _ref = ['add', 'insert', 'insertWithIndexes', 'remove', 'removeWithIndexes', 'at', 'find', 'clear', 'has', 'merge', 'toArray', 'isEmpty', 'indexedBy', 'indexedByUnique', 'sortedBy'];
     _fn = function(k) {
       return SetProxy.prototype[k] = function() {
-        var _ref1;
-        return (_ref1 = this.base)[k].apply(_ref1, arguments);
+        return this.base[k].apply(this.base, arguments);
       };
     };
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -6827,6 +6925,9 @@
 
     Model.prototype._withoutDirtyTracking = function(block) {
       var result;
+      if (this._pauseDirtyTracking) {
+        return block.call(this);
+      }
       this._pauseDirtyTracking = true;
       result = block.call(this);
       this._pauseDirtyTracking = false;
@@ -7151,12 +7252,6 @@
     return TerminalAccessible;
 
   })(Batman.Accessible);
-
-}).call(this);
-
-(function() {
-
-  Batman.mixins = new Batman.Object;
 
 }).call(this);
 
@@ -7608,7 +7703,8 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Batman.SetSort = (function(_super) {
@@ -7616,42 +7712,97 @@
     __extends(SetSort, _super);
 
     function SetSort(base, key, order) {
-      var boundReIndex,
-        _this = this;
+      var _this = this;
       this.key = key;
       if (order == null) {
         order = "asc";
       }
+      this.compareElements = __bind(this.compareElements, this);
+
       SetSort.__super__.constructor.call(this, base);
       this.descending = order.toLowerCase() === "desc";
-      if (this.base.isObservable) {
-        this._setObserver = new Batman.SetObserver(this.base);
+      this.isSorted = true;
+      if (this.isCollectionEventEmitter) {
         this._setObserver.observedItemKeys = [this.key];
-        boundReIndex = function() {
-          return _this._reIndex();
+        this._setObserver.observerForItemAndKey = function(item) {
+          return function(newValue, oldValue) {
+            return _this._handleItemsModified(item, newValue, oldValue);
+          };
         };
-        this._setObserver.observerForItemAndKey = function() {
-          return boundReIndex;
-        };
-        this._setObserver.on('itemsWereAdded', boundReIndex);
-        this._setObserver.on('itemsWereRemoved', boundReIndex);
-        this.startObserving();
       }
       this._reIndex();
     }
 
-    SetSort.prototype.startObserving = function() {
-      var _ref;
-      return (_ref = this._setObserver) != null ? _ref.startObserving() : void 0;
+    SetSort.prototype._handleItemsModified = function(item, newValue, oldValue) {
+      var match, newIndex, newStorage, oldIndex, proxyItem, wrappedCompare, _ref, _ref1,
+        _this = this;
+      proxyItem = {};
+      proxyItem[this.key] = oldValue;
+      wrappedCompare = function(a, b) {
+        if (a === item) {
+          a = proxyItem;
+        }
+        if (b === item) {
+          b = proxyItem;
+        }
+        return _this.compareElements(a, b);
+      };
+      newStorage = this._storage.slice();
+      _ref = this.constructor._binarySearch(newStorage, item, wrappedCompare), match = _ref.match, oldIndex = _ref.index;
+      if (!match) {
+        return;
+      }
+      newStorage.splice(oldIndex, 1);
+      _ref1 = this.constructor._binarySearch(newStorage, item, this.compareElements), match = _ref1.match, newIndex = _ref1.index;
+      if (oldIndex === newIndex) {
+        return;
+      }
+      newStorage.splice(newIndex, 0, item);
+      this.set('_storage', newStorage);
+      return this.fire('itemWasMoved', item, newIndex, oldIndex);
     };
 
-    SetSort.prototype.stopObserving = function() {
-      var _ref;
-      return (_ref = this._setObserver) != null ? _ref.stopObserving() : void 0;
+    SetSort.prototype._handleItemsAdded = function(items) {
+      var addedIndexes, addedItems, index, item, match, newStorage, _i, _len, _ref;
+      newStorage = this._storage.slice();
+      addedItems = [];
+      addedIndexes = [];
+      for (_i = 0, _len = items.length; _i < _len; _i++) {
+        item = items[_i];
+        _ref = this.constructor._binarySearch(newStorage, item, this.compareElements), match = _ref.match, index = _ref.index;
+        if (!match) {
+          newStorage.splice(index, 0, item);
+          addedItems.push(item);
+          addedIndexes.push(index);
+        }
+      }
+      this.set('_storage', newStorage);
+      this.set('length', this._storage.length);
+      return this.fire('itemsWereAdded', addedItems, addedIndexes);
+    };
+
+    SetSort.prototype._handleItemsRemoved = function(items) {
+      var index, item, match, newStorage, removedIndexes, removedItems, _i, _len, _ref;
+      newStorage = this._storage.slice();
+      removedItems = [];
+      removedIndexes = [];
+      for (_i = 0, _len = items.length; _i < _len; _i++) {
+        item = items[_i];
+        _ref = this.constructor._binarySearch(newStorage, item, this.compareElements), match = _ref.match, index = _ref.index;
+        if (match) {
+          newStorage.splice(index, 1);
+          removedItems.push(item);
+          removedIndexes.push(index);
+        }
+      }
+      this.set('_storage', newStorage);
+      this.set('length', this._storage.length);
+      return this.fire('itemsWereRemoved', removedItems, removedIndexes);
     };
 
     SetSort.prototype.toArray = function() {
-      return this.get('_storage');
+      this.base.registerAsMutableSource();
+      return this.get('_storage').slice();
     };
 
     SetSort.prototype.forEach = function(iterator, ctx) {
@@ -7666,7 +7817,7 @@
     SetSort.prototype.find = function(block) {
       var item, _i, _len, _ref;
       this.base.registerAsMutableSource();
-      _ref = this.get('_storage');
+      _ref = this._storage;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
         if (block(item)) {
@@ -7731,32 +7882,89 @@
       return 0;
     };
 
+    SetSort.prototype.compareElements = function(a, b) {
+      var multiple, valueA, valueB;
+      valueA = this.key && (a != null) ? Batman.get(a, this.key) : a;
+      if (typeof valueA === 'function') {
+        valueA = valueA.call(a);
+      }
+      if (valueA != null) {
+        valueA = valueA.valueOf();
+      }
+      valueB = this.key && (b != null) ? Batman.get(b, this.key) : b;
+      if (typeof valueB === 'function') {
+        valueB = valueB.call(b);
+      }
+      if (valueB != null) {
+        valueB = valueB.valueOf();
+      }
+      multiple = this.descending ? -1 : 1;
+      return this.compare(valueA, valueB) * multiple;
+    };
+
     SetSort.prototype._reIndex = function() {
-      var newOrder, _ref,
-        _this = this;
-      newOrder = this.base.toArray().sort(function(a, b) {
-        var multiple, valueA, valueB;
-        valueA = Batman.get(a, _this.key);
-        if (typeof valueA === 'function') {
-          valueA = valueA.call(a);
-        }
-        if (valueA != null) {
-          valueA = valueA.valueOf();
-        }
-        valueB = Batman.get(b, _this.key);
-        if (typeof valueB === 'function') {
-          valueB = valueB.call(b);
-        }
-        if (valueB != null) {
-          valueB = valueB.valueOf();
-        }
-        multiple = _this.descending ? -1 : 1;
-        return _this.compare.call(_this, valueA, valueB) * multiple;
-      });
+      var newOrder, _ref;
+      newOrder = this.base.toArray().sort(this.compareElements);
       if ((_ref = this._setObserver) != null) {
         _ref.startObservingItems(newOrder);
       }
       return this.set('_storage', newOrder);
+    };
+
+    SetSort.prototype._indexOfItem = function(target) {
+      var index, match, _ref;
+      _ref = this.constructor._binarySearch(this._storage, target, this.compareElements), match = _ref.match, index = _ref.index;
+      if (match) {
+        return index;
+      } else {
+        return -1;
+      }
+    };
+
+    SetSort._binarySearch = function(arr, target, compare) {
+      var direction, end, i, index, matched, result, start;
+      start = 0;
+      end = arr.length - 1;
+      result = {};
+      while (end >= start) {
+        index = ((end - start) >> 1) + start;
+        direction = compare(target, arr[index]);
+        if (direction > 0) {
+          start = index + 1;
+        } else if (direction < 0) {
+          end = index - 1;
+        } else {
+          matched = false;
+          i = index;
+          while (i >= 0 && compare(target, arr[i]) === 0) {
+            if (target === arr[i]) {
+              index = i;
+              matched = true;
+              break;
+            }
+            i--;
+          }
+          if (!matched) {
+            i = index + 1;
+            while (i < arr.length && compare(target, arr[i]) === 0) {
+              if (target === arr[i]) {
+                index = i;
+                matched = true;
+                break;
+              }
+              i++;
+            }
+          }
+          return {
+            match: matched,
+            index: index
+          };
+        }
+      }
+      return {
+        match: false,
+        index: start
+      };
     };
 
     return SetSort;
@@ -7783,6 +7991,8 @@
 
     AssociationSet.prototype.loaded = false;
 
+    AssociationSet.accessor('loaded', Batman.Property.defaultAccessor);
+
     AssociationSet.prototype.load = function(callback) {
       var _this = this;
       if (this.foreignKeyValue == null) {
@@ -7808,8 +8018,6 @@
       }
       return loadOptions;
     };
-
-    AssociationSet.accessor('loaded', Batman.Property.defaultAccessor);
 
     AssociationSet.prototype.markAsLoaded = function() {
       this.set('loaded', true);
@@ -9047,7 +9255,7 @@
     };
 
     function Association(model, label, options) {
-      var defaultOptions, encoder, encoderKey, getAccessor, self;
+      var association, defaultOptions, encoder, encoderKey, getAccessor;
       this.model = model;
       this.label = label;
       if (options == null) {
@@ -9073,9 +9281,9 @@
       };
       encoderKey = options.encoderKey || this.label;
       this.model.encode(encoderKey, encoder);
-      self = this;
+      association = this;
       getAccessor = function() {
-        return self.getAccessor.call(this, self, this.model, this.label);
+        return association.getAccessor.call(this, association, this.model, this.label);
       };
       this.model.accessor(this.label, {
         get: getAccessor,
@@ -9405,7 +9613,6 @@
           });
         }
       }
-      return true;
     };
 
     PolymorphicHasManyAssociation.prototype.proxyClassInstanceForKey = function(indexValue) {
@@ -9434,8 +9641,7 @@
     };
 
     PolymorphicHasManyAssociation.prototype.setIndex = function() {
-      this.typeIndex || (this.typeIndex = new Batman.PolymorphicAssociationSetIndex(this, this.modelType(), this[this.indexRelatedModelOn]));
-      return this.typeIndex;
+      return this.typeIndex || (this.typeIndex = new Batman.PolymorphicAssociationSetIndex(this, this.modelType(), this[this.indexRelatedModelOn]));
     };
 
     PolymorphicHasManyAssociation.prototype.encoder = function() {
@@ -9461,7 +9667,7 @@
       var association;
       association = this;
       return function(data, key, _, __, parentRecord) {
-        var children, id, jsonObject, newChildren, record, recordsToAdd, relatedModel, savedRecord, type, _i, _len;
+        var children, id, jsonObject, newChildren, record, recordsToAdd, relatedModel, type, _i, _len;
         children = association.getFromAttributes(parentRecord) || association.setForRecord(parentRecord);
         newChildren = children.filter(function(relation) {
           return relation.isNew();
@@ -9483,11 +9689,11 @@
             recordsToAdd.push(record);
           } else {
             if (newChildren.length > 0) {
-              savedRecord = newChildren.shift();
-              savedRecord._withoutDirtyTracking(function() {
+              record = newChildren.shift();
+              record._withoutDirtyTracking(function() {
                 return this.fromJSON(jsonObject);
               });
-              record = relatedModel._mapIdentity(savedRecord);
+              record = relatedModel._mapIdentity(record);
             } else {
               record = relatedModel._makeOrFindRecordFromData(jsonObject);
               recordsToAdd.push(record);
@@ -9525,26 +9731,26 @@
 
     SingularAssociation.prototype.isSingular = true;
 
-    SingularAssociation.prototype.getAccessor = function(self, model, label) {
-      var parent, proxy, record, recordInAttributes, _ref;
-      if (recordInAttributes = self.getFromAttributes(this)) {
+    SingularAssociation.prototype.getAccessor = function(association, model, label) {
+      var proxy, record, recordInAttributes, _ref,
+        _this = this;
+      if (recordInAttributes = association.getFromAttributes(this)) {
         return recordInAttributes;
       }
-      if (self.getRelatedModel()) {
-        proxy = this.associationProxy(self);
+      if (association.getRelatedModel()) {
+        proxy = this.associationProxy(association);
         record = false;
-        parent = this;
         if ((_ref = proxy._loadSetter) == null) {
           proxy._loadSetter = proxy.once('loaded', function(child) {
-            return parent._withoutDirtyTracking(function() {
-              return this.set(self.label, child);
+            return _this._withoutDirtyTracking(function() {
+              return this.set(association.label, child);
             });
           });
         }
         if (!Batman.Property.withoutTracking(function() {
           return proxy.get('loaded');
         })) {
-          if (self.options.autoload) {
+          if (association.options.autoload) {
             Batman.Property.withoutTracking(function() {
               return proxy.load();
             });
@@ -9557,8 +9763,7 @@
     };
 
     SingularAssociation.prototype.setIndex = function() {
-      this.index || (this.index = new Batman.UniqueAssociationSetIndex(this, this[this.indexRelatedModelOn]));
-      return this.index;
+      return this.index || (this.index = new Batman.UniqueAssociationSetIndex(this, this[this.indexRelatedModelOn]));
     };
 
     return SingularAssociation;
@@ -9589,8 +9794,10 @@
 
     HasOneAssociation.prototype.apply = function(baseSaveError, base) {
       var relation;
-      if (relation = this.getFromAttributes(base)) {
-        return relation.set(this.foreignKey, base.get(this.primaryKey));
+      if (!baseSaveError) {
+        if (relation = this.getFromAttributes(base)) {
+          return relation.set(this.foreignKey, base.get(this.primaryKey));
+        }
       }
     };
 
@@ -10878,7 +11085,7 @@
 
     __extends(AbstractBinding, _super);
 
-    keypath_rx = /(^|,)\s*(?:(true|false)|("[^"]*")|(\{[^\}]*\})|(([0-9]+[a-zA-Z\_\-]|[a-zA-Z])[\w\-\.]*[\?\!]?))\s*(?=$|,)/g;
+    keypath_rx = /(^|,)\s*(?:(true|false)|("[^"]*")|(\{[^\}]*\})|(([0-9]+[a-zA-Z\_\-]|[a-zA-Z])[\w\-\.\?\!\+]*))\s*(?=$|,)/g;
 
     get_dot_rx = /(?:\]\.)(.+?)(?=[\[\.]|\s*\||$)/;
 
@@ -11839,15 +12046,19 @@
     }
 
     FormBinding.prototype.initializeChildBindings = function() {
-      var attribute, binding, errorsNode, field, index, keyPath, selectedNode, selectedNodes, selectors, _i, _len;
+      var attribute, attributeName, binding, errorsNode, field, index, keyPath, selectedNode, selectedNodes, selectors, _i, _len;
       keyPath = this.keyPath;
       attribute = this.attributeName;
       selectors = ['input', 'textarea', 'select'].map(function(nodeName) {
         return "" + nodeName + "[data-bind^=\"" + attribute + "\"]";
       });
       selectedNodes = Batman.DOM.querySelectorAll(this.node, selectors.join(', '));
+      attributeName = "data-addclass-" + this.errorClass;
       for (_i = 0, _len = selectedNodes.length; _i < _len; _i++) {
         selectedNode = selectedNodes[_i];
+        if (!(!selectedNode.getAttribute(attributeName))) {
+          continue;
+        }
         binding = selectedNode.getAttribute('data-bind');
         field = binding.substr(binding.indexOf(attribute) + attribute.length + 1);
         index = field.indexOf('|');
@@ -11855,7 +12066,7 @@
           field = field.substr(0, index);
         }
         field = field.trim();
-        selectedNode.setAttribute("data-addclass-" + this.errorClass, "" + attribute + ".errors." + field + ".length");
+        selectedNode.setAttribute(attributeName, "" + attribute + ".errors." + field + ".length");
       }
       errorsNode = Batman.DOM.querySelector(this.node, '.errors');
       if (errorsNode && !errorsNode.getAttribute('data-showif')) {
@@ -11967,8 +12178,11 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var redundantWhitespaceRegex,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  redundantWhitespaceRegex = /[ \t]{2,}/g;
 
   Batman.DOM.AddClassBinding = (function(_super) {
 
@@ -12004,14 +12218,15 @@
         includesClassName = pattern.test(currentName);
         if (!!value === !this.invert) {
           if (!includesClassName) {
-            this.node.className = "" + currentName + " " + name;
+            currentName = "" + currentName + " " + name;
           }
         } else {
           if (includesClassName) {
-            this.node.className = currentName.replace(pattern, ' ');
+            currentName = currentName.replace(pattern, ' ');
           }
         }
       }
+      this.node.className = currentName.trim().replace(redundantWhitespaceRegex, ' ');
       return true;
     };
 
@@ -12046,7 +12261,14 @@
         if (!((_ref = this.collection) != null ? _ref.isObservable : void 0)) {
           return false;
         }
-        this.collection.observeAndFire('toArray', this.handleArrayChanged);
+        if (this.collection.isCollectionEventEmitter && this.handleItemsAdded && this.handleItemsRemoved && this.handleItemMoved) {
+          this.collection.on('itemsWereAdded', this.handleItemsAdded);
+          this.collection.on('itemsWereRemoved', this.handleItemsRemoved);
+          this.collection.on('itemWasMoved', this.handleItemMoved);
+          this.handleArrayChanged(this.collection.toArray());
+        } else {
+          this.collection.observeAndFire('toArray', this.handleArrayChanged);
+        }
         return true;
       }
     };
@@ -12056,13 +12278,20 @@
       if (!((_ref = this.collection) != null ? _ref.isObservable : void 0)) {
         return;
       }
-      return this.collection.forget('toArray', this.handleArrayChanged);
+      if (this.collection.isCollectionEventEmitter && this.handleItemsAdded && this.handleItemsRemoved && this.handleItemMoved) {
+        this.collection.off('itemsWereAdded', this.handleItemsAdded);
+        this.collection.off('itemsWereRemoved', this.handleItemsRemoved);
+        return this.collection.off('itemWasMoved', this.handleItemMoved);
+      } else {
+        return this.collection.forget('toArray', this.handleArrayChanged);
+      }
     };
 
     AbstractCollectionBinding.prototype.handleArrayChanged = function() {};
 
     AbstractCollectionBinding.prototype.die = function() {
       this.unbindCollection();
+      this.collection = null;
       return AbstractCollectionBinding.__super__.die.apply(this, arguments);
     };
 
@@ -12341,27 +12570,91 @@
       return document.createComment("batman-iterator-" + this.iteratorName + "=\"" + this.iteratorPath + "\"");
     };
 
-    IteratorView.prototype.beginAppendItems = function() {
-      this.fragment = document.createDocumentFragment();
-      return this.appendedViews = [];
+    IteratorView.prototype.addItems = function(items, indexes) {
+      var i, item, _i, _j, _len, _len1;
+      this._beginAppendItems();
+      if (indexes) {
+        for (i = _i = 0, _len = items.length; _i < _len; i = ++_i) {
+          item = items[i];
+          this._insertItem(item, indexes[i]);
+        }
+      } else {
+        for (_j = 0, _len1 = items.length; _j < _len1; _j++) {
+          item = items[_j];
+          this._insertItem(item);
+        }
+      }
+      return this._finishAppendItems();
     };
 
-    IteratorView.prototype.appendItem = function(item) {
+    IteratorView.prototype.removeItems = function(items, indexes) {
+      var i, item, subview, _i, _j, _len, _len1, _results, _results1;
+      if (indexes) {
+        _results = [];
+        for (i = _i = 0, _len = items.length; _i < _len; i = ++_i) {
+          item = items[i];
+          _results.push(this.subviews.at(indexes[i]).die());
+        }
+        return _results;
+      } else {
+        _results1 = [];
+        for (_j = 0, _len1 = items.length; _j < _len1; _j++) {
+          item = items[_j];
+          _results1.push((function() {
+            var _k, _len2, _ref, _results2;
+            _ref = this.subviews._storage;
+            _results2 = [];
+            for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
+              subview = _ref[_k];
+              if (!(subview.get(this.attributeName) === item)) {
+                continue;
+              }
+              subview.unset(this.attributeName);
+              subview.die();
+              break;
+            }
+            return _results2;
+          }).call(this));
+        }
+        return _results1;
+      }
+    };
+
+    IteratorView.prototype.moveItem = function(oldIndex, newIndex) {
+      var source, target;
+      source = this.subviews.at(oldIndex);
+      this.subviews._storage.splice(oldIndex, 1);
+      target = this.subviews.at(newIndex);
+      this.subviews._storage.splice(newIndex, 0, source);
+      return this.node.parentNode.insertBefore(source.node, (target != null ? target.node : void 0) || this.node);
+    };
+
+    IteratorView.prototype._beginAppendItems = function() {
+      this.fragment = document.createDocumentFragment();
+      this.appendedViews = [];
+      return this.get('node');
+    };
+
+    IteratorView.prototype._insertItem = function(item, targetIndex) {
       var iterationView;
       iterationView = new Batman.IterationView({
         node: this.prototypeNode.cloneNode(true),
         parentNode: this.fragment
       });
       iterationView.set(this.iteratorName, item);
-      this.subviews.add(iterationView);
-      this.appendedViews.push(iterationView);
-      return iterationView.parentNode = null;
+      if (targetIndex != null) {
+        iterationView._targeted = true;
+        this.subviews.insert([iterationView], [targetIndex]);
+      } else {
+        this.subviews.add(iterationView);
+      }
+      iterationView.parentNode = null;
+      return this.appendedViews.push(iterationView);
     };
 
-    IteratorView.prototype.finishAppendItems = function() {
-      var isInDOM, node, subview, _i, _j, _len, _len1, _ref, _ref1;
-      node = this.get('node');
-      isInDOM = document.body.contains(node);
+    IteratorView.prototype._finishAppendItems = function() {
+      var index, isInDOM, sibling, subview, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _step;
+      isInDOM = document.body.contains(this.node);
       if (isInDOM) {
         _ref = this.appendedViews;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -12369,12 +12662,25 @@
           subview.propagateToSubviews('viewWillAppear');
         }
       }
-      node.parentNode.insertBefore(this.fragment, node);
+      _ref1 = this.subviews.toArray();
+      for (index = _j = 0, _len1 = _ref1.length, _step = -1; _j < _len1; index = _j += _step) {
+        subview = _ref1[index];
+        if (!subview._targeted) {
+          continue;
+        }
+        if (sibling = (_ref2 = this.subviews.at(index + 1)) != null ? _ref2.get('node') : void 0) {
+          sibling.parentNode.insertBefore(subview.get('node'), sibling);
+        } else {
+          this.fragment.appendChild(subview.get('node'));
+        }
+        delete subview._targeted;
+      }
+      this.node.parentNode.insertBefore(this.fragment, this.node);
       this.fire('itemsWereRendered');
       if (isInDOM) {
-        _ref1 = this.appendedViews;
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          subview = _ref1[_j];
+        _ref3 = this.appendedViews;
+        for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
+          subview = _ref3[_k];
           subview.propagateToSubviews('isInDOM', isInDOM);
           subview.propagateToSubviews('viewDidAppear');
         }
@@ -12419,6 +12725,8 @@
     IteratorBinding.prototype.bindImmediately = false;
 
     function IteratorBinding(definition) {
+      this.handleItemMoved = __bind(this.handleItemMoved, this);
+
       this.handleItemsRemoved = __bind(this.handleItemsRemoved, this);
 
       this.handleItemsAdded = __bind(this.handleItemsAdded, this);
@@ -12436,6 +12744,7 @@
       };
       definition.node = null;
       IteratorBinding.__super__.constructor.apply(this, arguments);
+      this.backingView.set('attributeName', this.attributeName);
       this.view.prevent('ready');
       Batman.setImmediate(function() {
         var parentNode;
@@ -12464,39 +12773,32 @@
     IteratorBinding.prototype.handleArrayChanged = function(newItems) {
       if (!this.backingView.isDead) {
         this.backingView.destroySubviews();
-        return this.handleItemsAdded(newItems);
+        if (newItems != null ? newItems.length : void 0) {
+          return this.handleItemsAdded(newItems);
+        }
       }
     };
 
-    IteratorBinding.prototype.handleItemsAdded = function(newItems) {
-      var item, _i, _len;
+    IteratorBinding.prototype.handleItemsAdded = function(addedItems, addedIndexes) {
       if (!this.backingView.isDead) {
-        this.backingView.beginAppendItems();
-        if (newItems) {
-          for (_i = 0, _len = newItems.length; _i < _len; _i++) {
-            item = newItems[_i];
-            this.backingView.appendItem(item);
-          }
-        }
-        return this.backingView.finishAppendItems();
+        return this.backingView.addItems(addedItems, addedIndexes);
       }
     };
 
-    IteratorBinding.prototype.handleItemsRemoved = function(oldItems) {
-      var item, subview, _i, _j, _len, _len1, _ref;
+    IteratorBinding.prototype.handleItemsRemoved = function(removedItems, removedIndexes) {
+      if (this.backingView.isDead) {
+        return;
+      }
+      if (this.collection.length) {
+        return this.backingView.removeItems(removedItems, removedIndexes);
+      } else {
+        return this.backingView.destroySubviews();
+      }
+    };
+
+    IteratorBinding.prototype.handleItemMoved = function(item, newIndex, oldIndex) {
       if (!this.backingView.isDead) {
-        for (_i = 0, _len = oldItems.length; _i < _len; _i++) {
-          item = oldItems[_i];
-          _ref = this.backingView.subviews._storage;
-          for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-            subview = _ref[_j];
-            if (subview.get(this.attributeName) === item) {
-              subview.unset(this.attributeName);
-              subview.die();
-              break;
-            }
-          }
-        }
+        return this.backingView.moveItem(oldIndex, newIndex);
       }
     };
 
